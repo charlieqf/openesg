@@ -1,0 +1,14 @@
+{
+  "name": "openesg-ui-prototype",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Ten-page OpenESG interactive prototype using fictional data only",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node server.cjs",
+    "test": "node --test tests/state.test.cjs tests/static.test.cjs",
+    "build": "npm test"
+  }
+}

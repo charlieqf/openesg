@@ -1,0 +1,146 @@
+{
+  "sourceBaseline": "2026.09.07.1",
+  "scope": "Byte-identical export of reviewed fictional HTML and runtime assets; excludes the old local server. Cloud deployment is not yet verified.",
+  "files": [
+    {
+      "file": "public/01-project-overview.html",
+      "sha256": "e6cc1f7643da97febd17122d9ab6cb0ef6bb6940e0262d4db040ab15dc3a5f8c"
+    },
+    {
+      "file": "public/02-disclosure-checklist.html",
+      "sha256": "a4a7dac5e1bb66b7151d1f66b33a327c0e4cdc24a7201e32c2e41f19752fae40"
+    },
+    {
+      "file": "public/03-intake-files.html",
+      "sha256": "cc12ab5574a2ac3ae59bfadbe5c205bd446abceb22b54273991b35fb690856cf"
+    },
+    {
+      "file": "public/04-authoritative-sources.html",
+      "sha256": "ead71004fcf37c345bfd6a25f50238e4c6b5225b0acbfd86d27382fa50007540"
+    },
+    {
+      "file": "public/05-fact-review.html",
+      "sha256": "99b31da38058f50cdf00c6224105369937890f2915b84c14ad6e9e7dce853f31"
+    },
+    {
+      "file": "public/06-evidence-mapping.html",
+      "sha256": "e5d1dee3a049c33a71ac5b8e508f5bb8bb55baab680a165e507ae00852791f53"
+    },
+    {
+      "file": "public/07-writing-framework.html",
+      "sha256": "00a8b50f9d858c160c28ed73d703f46ddc5507bd24a2753a965cedaf5484babf"
+    },
+    {
+      "file": "public/08-writing-workbench.html",
+      "sha256": "9227760f87fa876262fb2e18726a14ae94db831b6d47363015434385a1541e28"
+    },
+    {
+      "file": "public/09-report-composer.html",
+      "sha256": "6866e592ad4e80565b7806f5de63cb57b0e7e65da2a76e4f26b34cd0f908b0a1"
+    },
+    {
+      "file": "public/10-report-delivery.html",
+      "sha256": "e7ad301e7996a52b869e61e09d40566a35e9acfb2bc79755dd174658568d9394"
+    },
+    {
+      "file": "public/assets/demo-data.js",
+      "sha256": "a98d3e59ced07dcb0bcc58859ae3044431ec437916245c950ceb005735675c06"
+    },
+    {
+      "file": "public/assets/demo-files/REF-CLI-1.md",
+      "sha256": "23385d62a73f5b5c222b5305ce449c2edc07bf49a0dc84f99ced230cdf796400"
+    },
+    {
+      "file": "public/assets/demo-files/REF-FIN-1.md",
+      "sha256": "6ac03e9f821a05cdeffc9f13dffd6fab5acf87e2f63d1c919472f8a626cb6e4d"
+    },
+    {
+      "file": "public/assets/demo-files/climate.md",
+      "sha256": "fcb4fb13ef88b4b9b62174d47769cd2853a08ed0e5e4a3713bd83ec839be154e"
+    },
+    {
+      "file": "public/assets/demo-files/drafts/CLI-001.md",
+      "sha256": "68e0486d2d5849918c37c7f7048973630f8c3c4aa92a8c47c282a71fce90030a"
+    },
+    {
+      "file": "public/assets/demo-files/drafts/ENV-001.md",
+      "sha256": "6392ddfbdc39edc21da97b6f55dc0e4d2d5fe27df7c59dc0f4bf91b7745fdab8"
+    },
+    {
+      "file": "public/assets/demo-files/drafts/ENV-002.md",
+      "sha256": "a48af17370f4b0df5b8e22f37cbb78262d98beb2509b073695239eb8b2a210fe"
+    },
+    {
+      "file": "public/assets/demo-files/drafts/ENV-003.md",
+      "sha256": "2249be759cfe5b03b95065ab9cb1c1e94540031a0142516b20bb91f2dd207e2e"
+    },
+    {
+      "file": "public/assets/demo-files/drafts/GOV-001.md",
+      "sha256": "38bf5da55bf122185cb559a7ffb21e2ff07600997d7c11a7d59f464b041aac0e"
+    },
+    {
+      "file": "public/assets/demo-files/drafts/GOV-002.md",
+      "sha256": "4082457716665c1dd5a307d00cd9518ff2de7645688fc433e7d7d69ee75a3a81"
+    },
+    {
+      "file": "public/assets/demo-files/drafts/SOC-001.md",
+      "sha256": "02ef666faf2ecf3d5a69c67e95e2afc4e30f88fb6371497fd7d1193b0ffd17eb"
+    },
+    {
+      "file": "public/assets/demo-files/drafts/SOC-002.md",
+      "sha256": "11dcd3d09791d9dd66bf138be5b59c0f373fbf19a8d04fdbf66de6554daedcf8"
+    },
+    {
+      "file": "public/assets/demo-files/environment-note.md",
+      "sha256": "564b3f205ef530fa5044a3d2cb442d3a896e441787614273121c1dbf345272ca"
+    },
+    {
+      "file": "public/assets/demo-files/environment-v1.csv",
+      "sha256": "6ac7e546970a806f6713a23293fa15e59d5d6f3ae5abbdd8c958d45f8a0617c7"
+    },
+    {
+      "file": "public/assets/demo-files/environment-v2.csv",
+      "sha256": "8d0ed052459cbc60b20121da993d83e31502f049daa600146e28ecd8efc08790"
+    },
+    {
+      "file": "public/assets/demo-files/governance.md",
+      "sha256": "8f7399805494fd212834cec0dae8a0232e01bb85d1c1167538538e9c4a6f07e1"
+    },
+    {
+      "file": "public/assets/demo-files/human-resources.csv",
+      "sha256": "56357c4c9d87a954a10910c8a6151dde46efc1766eb6f2e58f6a062c6657a499"
+    },
+    {
+      "file": "public/assets/demo-files/scan-error.md",
+      "sha256": "87e490312959233b1ddc6485d7e8d6413db303466be5c94b74efb2202098f764"
+    },
+    {
+      "file": "public/assets/demo-files/unassigned.md",
+      "sha256": "4ae586d88c2defdefef815e945cae4705a9fd088b7a3a79e510fb406f1f3dcf5"
+    },
+    {
+      "file": "public/assets/shared.css",
+      "sha256": "662592786256b32e9a2237210b7709abb3acd484ec48c60992a51ea6a69e646d"
+    },
+    {
+      "file": "public/assets/shared.js",
+      "sha256": "af7a2920f140c84eb5bdf7076de680ff8b29acc39c8385a7ab80f09654f43cf7"
+    },
+    {
+      "file": "public/assets/ui.js",
+      "sha256": "66a3da21538590dedba8e4a13e060c17922d6e16bda88470012f4a41d2dd1602"
+    },
+    {
+      "file": "public/assets/views.js",
+      "sha256": "f455d3e719ecf10eaf14ce31576b4dbaa935ce709ad4b76dfdb14b813ffeeb15"
+    },
+    {
+      "file": "public/assets/webmcp.js",
+      "sha256": "2492a0877f1c862794689d708d7e0c891bfd6983727311cea812b52e18b98577"
+    },
+    {
+      "file": "public/index.html",
+      "sha256": "a0a61384916398467403be4a1c4b6997886f0d874c884486f7c2513e253cad6e"
+    }
+  ]
+}

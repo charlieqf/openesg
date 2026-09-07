@@ -1,0 +1,14 @@
+node_modules/
+.wrangler/
+.env
+.env.*
+.dev.vars
+.dev.vars.*
+*.log
+*.zip
+*.7z
+.DS_Store
+Thumbs.db
+coverage/
+test-results/
+playwright-report/
