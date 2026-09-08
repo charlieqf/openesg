@@ -35,7 +35,7 @@
   const icons = ['grid', 'book', 'file', 'layers', 'shield', 'link', 'tree', 'pen', 'compose', 'archive'];
   const icon = (name, cls = '') => '<svg class="icon ' + cls + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (paths[name] || paths.file) + '</svg>';
   const button = (label, action, payload = {}, cls = '', disabled = false) => '<button type="button" class="btn ' + cls + '" data-action="' + escape(action) + '" data-payload="' + escape(JSON.stringify(payload)) + '"' + (disabled ? ' disabled' : '') + '>' + label + '</button>';
-  const badge = status => '<span class="badge badge-' + escape(status) + '">' + escape(D.labels[status] || status) + '</span>';
+  const badge = (status, kind = '') => '<span class="badge badge-' + escape(kind === 'build' && status === 'ready' ? 'review' : status) + '">' + escape((kind === 'gate' ? { ready: '通过', preflight_failed: '未通过' } : kind === 'build' ? { ready: '待最终审核', approved: '已批准', rejected: '已拒绝' } : {})[status] || D.labels[status] || status) + '</span>';
   const link = (page, type, id, label, extra = {}, cls = '') => '<a class="' + cls + '" href="' + escape(E.url(page, type, id, extra)) + '">' + label + '</a>';
   const panel = (title, body, meta = '', cls = '') => '<section class="panel ' + cls + '"><div class="panel-head"><h2>' + title + '</h2>' + meta + '</div><div class="panel-body">' + body + '</div></section>';
   const notice = (text, tone = '') => '<div class="notice ' + tone + '">' + icon(tone === 'success' ? 'checkCircle' : 'alert') + '<div>' + text + '</div></div>';
@@ -70,7 +70,7 @@
     if (dialog) closeDialog(); dialogReturn = document.activeElement;
     dialog = document.createElement('dialog'); dialog.className = cls;
     dialog.innerHTML = '<div class="dialog-head"><h2 id="dialog-title">' + title + '</h2><button class="btn btn-icon btn-quiet" data-action="close" aria-label="关闭对话框">' + icon('close') + '</button></div><div class="dialog-body">' + content + '</div>' + (footer ? '<div class="dialog-foot">' + footer + '</div>' : '');
-    dialog.setAttribute('aria-labelledby', 'dialog-title'); document.body.append(dialog); dialog.addEventListener('cancel', e => { e.preventDefault(); closeDialog(); }); dialog.showModal(); decorateTables(dialog); return dialog;
+    dialog.setAttribute('aria-labelledby', 'dialog-title'); document.body.append(dialog); dialog.addEventListener('cancel', e => { e.preventDefault(); closeDialog(); }); dialog.showModal(); decorateTables(dialog); U.design?.resizePrompts(); return dialog;
   }
   function ask(title, body, submitLabel, callback, cls = '') {
     const d = openDialog(title, '<form id="dialog-form">' + body + '</form>', button('取消', 'close', {}, 'btn-quiet') + '<button type="submit" form="dialog-form" class="btn btn-primary">' + submitLabel + '</button>', cls);
@@ -80,7 +80,7 @@
     }); return d;
   }
   function reasonDialog(title, description, action, payload, label = '确认') {
-    return ask(title, notice(description, 'info') + '<div class="mt">' + field('reason', '审核意见 / 操作理由', '<textarea id="reason" name="reason" rows="4" required placeholder="说明判断依据、证据口径及处理意见"></textarea>') + '</div>', label, values => { E.dispatch({ ...payload, type: action, reason: values.reason }); toast('已保存本地演示操作。'); });
+    return ask(title, notice(description, 'info') + (U.design ? U.design.reviewIdentity(action, payload) : '') + '<div class="mt">' + field('reason', '审核意见 / 操作理由', '<textarea id="reason" name="reason" rows="4" required placeholder="说明判断依据、证据口径及处理意见"></textarea>') + '</div>', label, values => { E.dispatch({ ...payload, type: action, reason: values.reason }); toast('已保存本地演示操作。'); });
   }
   function download(filename, text, mime = 'text/plain;charset=utf-8') {
     const url = URL.createObjectURL(new Blob([text], { type: mime })); const a = document.createElement('a'); a.href = url; a.download = filename; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1200);
@@ -89,22 +89,22 @@
     try { await navigator.clipboard.writeText(text); toast(label); }
     catch { openDialog('请手动复制', notice('浏览器未允许访问剪贴板。下方文本可全选复制。', 'info') + '<textarea class="mt" rows="5" readonly>' + escape(text) + '</textarea>', button('关闭', 'close')); }
   }
-  function markdown(text) {
+  function markdown(text, graph = E.state()) {
     const escaped = escape(text);
     return '<div class="markdown">' + escaped.split(/\n\n+/).map(part => {
-      let html = part.replace(/［(FV-[A-Z0-9-]+-v\d+)］/g, (_, id) => '<button class="citation" data-action="factEvidence" data-payload="' + escape(JSON.stringify({ id })) + '">' + escape(id) + '</button>');
+      let html = part.replace(/［(FV-[A-Z0-9-]+-v\d+)］/g, (_, id) => (() => { const f = E.byId(graph.facts || [], id), stale = !f || !E.effective(graph, f); return '<button class="citation' + (stale ? ' citation-stale' : '') + '" title="' + (stale ? '此引用未生效或已被替代，请同时核对正文数值和口径' : '查看有效事实与原始证据') + '" data-action="factEvidence" data-payload="' + escape(JSON.stringify({ id })) + '">' + escape(id) + (stale ? ' · 待复核' : '') + '</button>'; })());
       if (/^### /.test(html)) return '<h3>' + html.slice(4) + '</h3>';
       if (/^## /.test(html)) return '<h2>' + html.slice(3) + '</h2>';
       if (/^# /.test(html)) return '<h1>' + html.slice(2) + '</h1>';
       if (/^&gt; /.test(html)) return '<blockquote>' + html.slice(5) + '</blockquote>';
       if (html === '---') return '<div class="hr"></div>';
-      return '<p>' + html.replace(/\n/g, '<br>') + '</p>';
+      return '<p' + (html.includes('citation-stale') ? ' class="stale-passage"' : '') + '>' + html.replace(/\n/g, '<br>') + '</p>';
     }).join('') + '</div>';
   }
   function documentPreview(file, locator, compact = false) {
     if (!file) return empty('未选择证据文件', '选择一个事实或原始定位后，可在此回看。');
     return '<div class="document' + (compact ? ' compact' : '') + '"><div class="document-head"><span>' + escape(file.type) + ' · 内容预览示意</span><span>v' + escape(file.version) + '</span></div><h3>' + escape(file.section || file.name) + '</h3>' +
-      (file.rows ? '<div class="table-scroll"><table><thead><tr>' + file.columns.map(c => '<th>' + escape(c) + '</th>').join('') + '</tr></thead><tbody>' + file.rows.map((row, i) => '<tr class="' + (locator && locator.row === i ? 'highlight' : '') + '">' + row.map(v => '<td>' + escape(v) + '</td>').join('') + '</tr>').join('') + '</tbody></table></div>' : (file.paragraphs || []).map((p, i) => '<p' + (locator && (i === 1 || i === 2) ? ' class="diff-new"' : '') + '>' + escape(p) + '</p>').join('')) +
+      (file.rows && compact && locator ? U.design.evidenceRow(file, locator) : file.rows ? '<div class="table-scroll"><table><thead><tr>' + file.columns.map(c => '<th>' + escape(c) + '</th>').join('') + '</tr></thead><tbody>' + file.rows.map((row, i) => '<tr class="' + (locator && locator.row === i ? 'highlight' : '') + '">' + row.map(v => '<td>' + escape(v) + '</td>').join('') + '</tr>').join('') + '</tbody></table></div>' : (file.paragraphs || []).map((p, i) => '<p' + (locator && (i === 1 || i === 2) ? ' class="diff-new"' : '') + '>' + escape(p) + '</p>').join('')) +
       (locator ? '<blockquote><strong>' + escape(locator.position) + '</strong><br>' + escape(locator.quote) + '</blockquote>' : '') + '<div class="document-footer">虚构演示内容 · 不是客户原附件，也不是 PDF / Office 解析结果</div></div>';
   }
   function selection(type, fallback) {
@@ -155,7 +155,7 @@
   }
   function shell(content) {
     const g = E.state(), meta = E.meta(), s = E.stats(g), scene = D.scenes.find(x => x.id === g.scene);
-    return '<a class="skip-link" href="#main-content">跳到主要内容</a><aside class="rail"><a class="brand" href="index.html" aria-label="OpenESG 原型导航"><span class="brand-mark">O</span><span class="brand-name">OpenESG<small>LOCAL WORKSPACE</small></span></a><div class="rail-project"><strong>' + escape(g.project.name) + '</strong><span>' + escape(g.project.period) + ' 年度 · 虚构项目</span></div><div class="nav-label">报告工作流</div><nav aria-label="主要页面">' + D.pages.map((p, i) => (i === 1 || i === 6 ? '<div class="nav-divider"></div>' : '') + '<a title="' + p.id + ' · ' + p.label + '" class="nav-item ' + (pageKey === p.key ? 'active' : '') + '" ' + (pageKey === p.key ? 'aria-current="page" ' : '') + 'href="' + escape(E.url(p.key, 'project', g.project.id)) + '">' + icon(icons[i]) + '<span class="nav-text">' + p.label + '</span><span class="nav-number">' + p.id.slice(1) + '</span></a>').join('') + '</nav><div class="rail-bottom"><i class="local-light"></i><span>本地演示 · 无外部连接</span></div></aside><div class="app"><header class="topbar"><div class="breadcrumbs"><span>工作区</span><span>/</span><strong>' + escape(g.project.name) + '</strong><span>/</span><span>' + (page?.label || '原型导航') + '</span></div><div class="top-actions">' + button(icon('layers') + '<span>演示场景</span>', 'scenes', {}, 'btn-quiet') + button(icon('spark') + '模型动作 <span class="count">' + E.count(g.actions.filter(a => ['pending', 'running', 'review', 'failed'].includes(a.status))) + '</span>', 'tasks', {}, 'btn-quiet') + '<span class="avatar">林</span><span class="user-label">林悦 · 审核演示</span></div></header><div class="demo-strip"><span>虚构演示数据 <span class="scope-extra">· 不代表客户实际情况或监管结论</span></span><span>' + (meta.readonly ? '固定快照 · 只读' : escape(scene?.name || g.scene)) + ' · ' + (meta.readonly ? '<button data-action="currentVersion">返回当前工作版本</button>' : '<button data-action="reset">重置演示</button>') + '</span></div><main id="main-content" class="main" tabindex="-1">' + (meta.stale ? notice('另一页面已更新状态，当前编辑基线已过期。请保存文本副本后重新加载。' + button('重新加载', 'currentVersion'), 'danger') : '') + content + toolbar(g) + '</main></div>';
+    return '<a class="skip-link" href="#main-content">跳到主要内容</a><aside class="rail"><a class="brand" href="index.html" aria-label="OpenESG 原型导航"><span class="brand-mark">O</span><span class="brand-name">OpenESG<small>LOCAL WORKSPACE</small></span></a><div class="rail-project"><strong>' + escape(g.project.name) + '</strong><span>' + escape(g.project.period) + ' 年度 · 虚构项目</span></div><div class="nav-label">报告工作流</div><nav aria-label="主要页面">' + D.pages.map((p, i) => (i === 1 || i === 6 ? '<div class="nav-divider"></div>' : '') + '<a title="' + p.id + ' · ' + p.label + '" class="nav-item ' + (pageKey === p.key ? 'active' : '') + '" ' + (pageKey === p.key ? 'aria-current="page" ' : '') + 'href="' + escape(E.url(p.key, 'project', g.project.id)) + '">' + icon(icons[i]) + '<span class="nav-text">' + p.label + '</span><span class="nav-number">' + p.id.slice(1) + '</span></a>').join('') + '</nav><div class="rail-bottom"><i class="local-light"></i><span>本地演示 · 无外部连接</span></div></aside><div class="app"><header class="topbar"><div class="breadcrumbs"><span>工作区</span><span>/</span><strong>' + escape(g.project.name) + '</strong><span>/</span><span>' + (page?.label || '原型导航') + '</span></div><div class="top-actions">' + button(icon('layers') + '<span>演示场景</span>', 'scenes', {}, 'btn-quiet') + button(icon('spark') + '模型动作 <span class="count">' + E.count(g.actions.filter(a => ['pending', 'running', 'review', 'failed'].includes(a.status))) + '</span>', 'tasks', {}, 'btn-quiet') + '<span class="avatar">林</span><span class="user-label">林悦 · ESG 撰写人</span></div></header><div class="demo-strip"><span>虚构演示数据 <span class="scope-extra">· 不代表客户实际情况或监管结论</span></span><span>' + (meta.readonly ? '固定快照 · 只读' : escape(scene?.name || g.scene)) + ' · ' + (meta.readonly ? '<button data-action="currentVersion">返回当前工作版本</button>' : '<button data-action="reset">重置演示</button>') + '</span></div><main id="main-content" class="main" tabindex="-1">' + (meta.stale ? notice('另一页面已更新状态，当前编辑基线已过期。请保存文本副本后重新加载。' + button('重新加载', 'currentVersion'), 'danger') : '') + content + toolbar(g) + '</main></div>';
   }
   function heading(eyebrow, title, description, actions = '') { return '<div class="page-heading"><div><div class="eyebrow">' + eyebrow + '</div><h1>' + title + '</h1><p>' + description + '</p></div><div class="heading-actions">' + actions + '</div></div>'; }
   function render() {
@@ -168,6 +168,7 @@
       const content = view ? view(g, U) : heading('PROTOTYPE INDEX', 'OpenESG 工作台原型', '同一项目、同一证据链，十个独立 HTML 工作视图。') + '<div class="index-grid">' + D.pages.map((p, i) => '<a class="index-card" href="' + p.file + '"><div class="between"><span class="eyebrow">' + p.id + ' / ' + p.stage + '</span>' + icon(icons[i]) + '</div><h2>' + p.title + '</h2><p>' + ['项目进度、待办与阻断原因', '披露要求、原始条款与版本审核', '文件内容、证据定位与双向索引', '文件版本比较与权威来源裁定', '核对事实变化，保留有效与历史版本', '检查项、有效事实与原始证据的对应关系', '章节顺序、稳定要点与参考写法', '逐要点编辑、引用、Diff 与审核锁定', '八项预检、连续预览与确定性合成', '冻结版本、构建清单与示例交付'][i] + '</p><span class="small success-text">打开工作视图 →</span></a>').join('') + '</div>';
       document.getElementById('app').innerHTML = shell(content);
       decorateTables(document.getElementById('app'));
+      U.design?.resizePrompts();
       preserved.forEach(item => { const el = document.getElementById(item.id); if (el) { el.value = item.value; if (item.dirty) el.dataset.dirty = item.dirty; if (item.focused) { el.focus({ preventScroll: true }); if (typeof el.setSelectionRange === 'function') el.setSelectionRange(item.start, item.end); } } });
     }
     lastRenderKey = renderKey;
@@ -175,11 +176,14 @@
   }
   function taskOutput(task, graph) {
     if (!task.output) return notice('任务尚未产生输出。状态将自动推进，刷新后可继续。', 'info');
+    if (task.target_type === 'unit' && task.action_type === 'validate' && task.operation !== 'consistency') {
+      return '<h3 class="mt">逐条披露检验输出 · 模拟</h3><div class="validation-output-contract">' + notice('当前为通用分析占位；正式实现按“检验结果样例”格式逐条输出：本条要求、结论、依据与定位、修改建议。下方文字不是逐条检验结论。', 'info') + button('查看检验结果格式', 'validationDesign', { id: task.target_object_ids[0], taskId: task.id }, 'btn-small') + '</div><pre class="code-block mt">' + escape(task.output) + '</pre>';
+    }
     const pack = E.byId(graph.contextPacks, task.context_pack_id);
     const selected = pack?.input_snapshot?.selected || [];
-    const before = selected.map(o => (o.title || o.name || o.id) + '\n' + (o.body || o.summary || o.text || JSON.stringify(o.rows || o.paragraphs || o, null, 2))).join('\n\n---\n\n');
+    const before = selected.map(o => o.body || ((o.title || o.name || o.id) + '\n' + (o.summary || o.text || JSON.stringify(o.rows || o.paragraphs || o, null, 2)))).join('\n\n---\n\n');
     const after = task.frozenUnits?.length && ['draft', 'rewrite', 'merge'].includes(task.action_type) ? task.frozenUnits.map(u => u.body).join('\n\n---\n\n') : task.output;
-    return '<h3 class="mt">建议 / Diff 输出</h3><p class="meta">比较固定输入与本次建议；应用后仍需单独业务审核。输入 ' + escape(task.inputHash) + ' · 输出 ' + escape(task.outputHash) + '</p><div class="split model-diff"><section><div class="version-label">原版本 · 固定输入</div><pre class="code-block diff-old">' + escape(before) + '</pre></section><section><div class="version-label">建议版本 · 待人工确认</div><pre class="code-block diff-new">' + escape(after) + '</pre></section></div>';
+    return '<h3 class="mt">建议 / Diff 输出</h3><p class="meta">固定输入与建议的变更块；应用后仍需业务审核。输入 ' + escape(task.inputHash) + ' · 输出 ' + escape(task.outputHash) + '</p>' + U.design.difference(before, after);
   }
   function refreshTasks() {
     if (!dialog) return;
@@ -235,7 +239,7 @@
     else if (type === 'check') { const prev = g.checklist.history.at(-1)?.checks?.find(c => c.id === id); if (prev) old = prev.summary; }
     else if (object.externalBody) { old = object.body; next = object.externalBody; }
     else if (object.history?.length) { const previous = object.history.at(-1); old = previous.body || JSON.stringify(previous, null, 2); }
-    const body = old === undefined ? empty('没有可比较的前一版本', '当前对象尚未产生历史差异。新建议或新版本出现后，可在此比较。') : '<div class="split"><section><div class="version-label">原版本</div><pre class="code-block diff-old">' + escape(old) + '</pre></section><section><div class="version-label">当前 / 建议版本</div><pre class="code-block diff-new">' + escape(next) + '</pre></section></div>';
+    const body = old === undefined ? empty('没有可比较的前一版本', '当前对象尚未产生历史差异。新建议或新版本出现后，可在此比较。') : U.design.difference(old, next);
     openDialog('版本差异 · ' + escape(id), body, button('关闭', 'close'), 'wide');
   };
   handlers.model = p => {
@@ -246,7 +250,7 @@
     E.need(p.operation !== 'rewriteSelection' || selection, '请先在正文中选中需要改写的文字。');
     E.need(p.operation !== 'merge' || ids.length > 1, '合并至少需要选择两个检查项。');
     const names = ids.map(id => E.resolveObject(g, p.targetType, id).title || E.resolveObject(g, p.targetType, id).name || id);
-    ask(p.label + ' · 模拟模型动作', notice('作用范围：' + names.map(escape).join('；') + (selection ? '。仅处理当前选中文字。' : '') + '。输出先进入待确认，不自动批准业务对象。', 'info') + '<div class="mt">' + field('instruction', '处理指令', '<textarea id="instruction" name="instruction" rows="4" required>' + escape(p.label + '，保留原始来源和版本，仅使用已确认事实。') + '</textarea>') + '</div><label class="check-option"><input type="checkbox" name="fail"><span>本次模拟服务失败，检查恢复入口</span></label>', '生成建议', values => { E.dispatch({ type: 'startModel', ...p, ids, selection, instruction: values.instruction, fail: !!values.fail }); closeDialog(); handlers.tasks({ id: E.state().actions[0].id }); return false; });
+    ask(p.label + ' · 模拟模型动作', notice('作用范围：' + names.map(escape).join('；') + (selection ? '。仅处理当前选中文字。' : '') + '。输出先进入待确认，不自动批准业务对象。', 'info') + '<div class="mt">' + field('instruction', '本次指令 · 临时调整，不回写长期配置', '<textarea id="instruction" name="instruction" rows="4" required>' + escape(p.targetType === 'unit' && ids.length === 1 && U.design ? U.design.instruction(g, E.byId(g.units, ids[0]), p.actionType === 'validate' ? 'validation' : 'writing') + (p.operation === 'consistency' ? '\n\n本次重点：术语、叙述与数据口径的一致性；不把此结果当作完整的逐条披露检验。' : '') : p.label + '，保留原始来源和版本，仅使用已确认事实。') + '</textarea>') + '</div><label class="check-option"><input type="checkbox" name="fail"><span>本次模拟服务失败，检查恢复入口</span></label>', '生成建议', values => { E.dispatch({ type: 'startModel', ...p, ids, selection, instruction: values.instruction, fail: !!values.fail }); closeDialog(); handlers.tasks({ id: E.state().actions[0].id }); return false; });
   };
   handlers.tasks = (p = {}) => { selectedTask = p.id || selectedTask; const d = openDialog('模型动作中心', '', button('关闭', 'close'), 'drawer'); d.dataset.kind = 'tasks'; refreshTasks(); };
   handlers.taskSelect = p => { selectedTask = p.id; refreshTasks(); };
@@ -256,7 +260,7 @@
   handlers.modelRetry = p => { E.dispatch({ type: 'retryModel', id: p.id }); toast('已从此模型节点重试。'); };
   handlers.audit = p => {
     const g = E.state(), rows = p.id ? g.audit.filter(a => a.objectId === p.id) : g.audit;
-    openDialog('审核与运行记录', rows.length ? rows.map(a => '<div class="audit-line"><span class="timeline-dot"></span><div><strong>' + escape(a.title) + '</strong><div class="meta">' + escape(a.time + ' · ' + a.actor) + '</div><p class="small">' + escape(a.reason) + '</p><div class="mono break">' + escape(a.node + ' · ' + a.runId + ' · ' + a.inputHash) + '</div></div></div>').join('') : empty('当前对象没有新增审核记录'), button('关闭', 'close'), 'drawer');
+    openDialog('审核与运行记录', rows.length ? rows.map(a => '<div class="audit-line"><span class="timeline-dot"></span><div><strong>' + escape(a.title) + '</strong><div class="meta">' + escape(a.time + ' · ' + a.actor + (a.role ? ' · ' + a.role : ' · 历史角色未记录')) + (a.submittedBy ? '<div class="meta">提交 / 编制：' + escape(a.submittedBy) + '</div>' : '') + '</div><p class="small">' + escape(a.reason) + '</p><div class="mono break">' + escape(a.node + ' · ' + a.runId + ' · ' + a.inputHash) + '</div></div></div>').join('') : empty('当前对象没有新增审核记录'), button('关闭', 'close'), 'drawer');
   };
   document.addEventListener('click', async event => {
     const target = event.target.closest('[data-action]'); if (!target || target.disabled) return;

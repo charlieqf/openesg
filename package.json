@@ -9,6 +9,7 @@
   "scripts": {
     "start": "node server.cjs",
     "test": "node --test tests/state.test.cjs tests/static.test.cjs",
-    "build": "npm test"
+    "build": "npm test",
+    "test:design": "node tests/design-review.cjs"
   }
 }

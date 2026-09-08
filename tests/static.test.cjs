@@ -36,7 +36,7 @@ test('ten pages and navigation ship every referenced asset', () => {
 });
 
 test('exported runtime remains identical to the reviewed source baseline', () => {
-  assert.equal(baseline.files.length, 35);
+  assert.equal(baseline.files.length, 36);
   for (const item of baseline.files) {
     const actual = crypto.createHash('sha256').update(fs.readFileSync(path.join(root, item.file))).digest('hex');
     assert.equal(actual, item.sha256, item.file + ': review changes before updating the baseline');

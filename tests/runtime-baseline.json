@@ -1,58 +1,50 @@
 {
-  "sourceBaseline": "2026.09.07.1",
-  "scope": "Byte-identical export of reviewed fictional HTML and runtime assets; excludes the old local server. Cloud deployment is not yet verified.",
+  "sourceBaseline": "2026.09.08.design-review.2",
+  "scope": "Fictional static UI follow-up; source and public runtime byte-identical. Page-only prompts; historical evidence is not current acceptance. Deployment tracked in docs/cloudflare-deployment.md.",
   "files": [
     {
       "file": "public/01-project-overview.html",
-      "sha256": "e6cc1f7643da97febd17122d9ab6cb0ef6bb6940e0262d4db040ab15dc3a5f8c"
+      "sha256": "d7c2134b15e9ecdbaf4540f8704a46834dd328a5dc7395fcf1ab271db02d4609"
     },
     {
       "file": "public/02-disclosure-checklist.html",
-      "sha256": "a4a7dac5e1bb66b7151d1f66b33a327c0e4cdc24a7201e32c2e41f19752fae40"
+      "sha256": "0c909709bf13dc27ae6ab68995e730f3b67d1992b1efa26136d70cd886aea8b3"
     },
     {
       "file": "public/03-intake-files.html",
-      "sha256": "cc12ab5574a2ac3ae59bfadbe5c205bd446abceb22b54273991b35fb690856cf"
+      "sha256": "d203f3418ea131503008709c8ff020bda82fdbe3733c94fe7a92cac647ba53de"
     },
     {
       "file": "public/04-authoritative-sources.html",
-      "sha256": "ead71004fcf37c345bfd6a25f50238e4c6b5225b0acbfd86d27382fa50007540"
+      "sha256": "0df8f4a3818f20f3601a7cba8712c6d3716d503dcc771783f2f50514bf023c32"
     },
     {
       "file": "public/05-fact-review.html",
-      "sha256": "99b31da38058f50cdf00c6224105369937890f2915b84c14ad6e9e7dce853f31"
+      "sha256": "40a906e281b1c67ec52a8393ad1c1dae99037e15f9ed3ce8d5c513529ede2b3c"
     },
     {
       "file": "public/06-evidence-mapping.html",
-      "sha256": "e5d1dee3a049c33a71ac5b8e508f5bb8bb55baab680a165e507ae00852791f53"
+      "sha256": "ab9eb6ef85f263ed1a91dcbba8051e353ed77d698aed79d8375a27d4fa24f2d8"
     },
     {
       "file": "public/07-writing-framework.html",
-      "sha256": "00a8b50f9d858c160c28ed73d703f46ddc5507bd24a2753a965cedaf5484babf"
+      "sha256": "5bad0ecd560edf345ccf3e4c7cccf9967a5c9cf13c4dc792e3d55633e3f0161b"
     },
     {
       "file": "public/08-writing-workbench.html",
-      "sha256": "9227760f87fa876262fb2e18726a14ae94db831b6d47363015434385a1541e28"
+      "sha256": "15e7777222f273d69c094f9b2fa38e71e4ca50630856b36f34251126ac8e380c"
     },
     {
       "file": "public/09-report-composer.html",
-      "sha256": "6866e592ad4e80565b7806f5de63cb57b0e7e65da2a76e4f26b34cd0f908b0a1"
+      "sha256": "a26c570dad607d9d46b7829ac84ecf276f78be8f9778d6b94d60eb91c29895b8"
     },
     {
       "file": "public/10-report-delivery.html",
-      "sha256": "e7ad301e7996a52b869e61e09d40566a35e9acfb2bc79755dd174658568d9394"
+      "sha256": "532ae7a1cee3a0529ef215347a6d1031bfc4f526518cf2fcdaf2ac2424708e7f"
     },
     {
       "file": "public/assets/demo-data.js",
-      "sha256": "a98d3e59ced07dcb0bcc58859ae3044431ec437916245c950ceb005735675c06"
-    },
-    {
-      "file": "public/assets/demo-files/REF-CLI-1.md",
-      "sha256": "23385d62a73f5b5c222b5305ce449c2edc07bf49a0dc84f99ced230cdf796400"
-    },
-    {
-      "file": "public/assets/demo-files/REF-FIN-1.md",
-      "sha256": "6ac03e9f821a05cdeffc9f13dffd6fab5acf87e2f63d1c919472f8a626cb6e4d"
+      "sha256": "e9b18cb07346edcaa940f7f06535cbbff6e80ea15fe1a43b6fe91dbb284b8b4c"
     },
     {
       "file": "public/assets/demo-files/climate.md",
@@ -111,6 +103,14 @@
       "sha256": "56357c4c9d87a954a10910c8a6151dde46efc1766eb6f2e58f6a062c6657a499"
     },
     {
+      "file": "public/assets/demo-files/REF-CLI-1.md",
+      "sha256": "23385d62a73f5b5c222b5305ce449c2edc07bf49a0dc84f99ced230cdf796400"
+    },
+    {
+      "file": "public/assets/demo-files/REF-FIN-1.md",
+      "sha256": "6ac03e9f821a05cdeffc9f13dffd6fab5acf87e2f63d1c919472f8a626cb6e4d"
+    },
+    {
       "file": "public/assets/demo-files/scan-error.md",
       "sha256": "87e490312959233b1ddc6485d7e8d6413db303466be5c94b74efb2202098f764"
     },
@@ -119,20 +119,24 @@
       "sha256": "4ae586d88c2defdefef815e945cae4705a9fd088b7a3a79e510fb406f1f3dcf5"
     },
     {
+      "file": "public/assets/design-review.js",
+      "sha256": "a127484a0469c63d6f017a02a61aa83291eb785d37381c181233356924ebc03c"
+    },
+    {
       "file": "public/assets/shared.css",
-      "sha256": "662592786256b32e9a2237210b7709abb3acd484ec48c60992a51ea6a69e646d"
+      "sha256": "8ab39c9ed69a1f9b6815554888306e2fb773295e8df74102ece69cda44437cae"
     },
     {
       "file": "public/assets/shared.js",
-      "sha256": "af7a2920f140c84eb5bdf7076de680ff8b29acc39c8385a7ab80f09654f43cf7"
+      "sha256": "ffcf41b33aeff784fa61ade0c6c3fcfbd7a9911801c9bacf69d6e2e548c3a69f"
     },
     {
       "file": "public/assets/ui.js",
-      "sha256": "66a3da21538590dedba8e4a13e060c17922d6e16bda88470012f4a41d2dd1602"
+      "sha256": "cf334b33c9e83a7b705880c82a627df370c859af5cf197e2abddadc415398f6a"
     },
     {
       "file": "public/assets/views.js",
-      "sha256": "f455d3e719ecf10eaf14ce31576b4dbaa935ce709ad4b76dfdb14b813ffeeb15"
+      "sha256": "ac5342ddcc24a121ff35ee563ce385c33942944e25d41b06b1b87c7a90717476"
     },
     {
       "file": "public/assets/webmcp.js",
@@ -140,7 +144,7 @@
     },
     {
       "file": "public/index.html",
-      "sha256": "a0a61384916398467403be4a1c4b6997886f0d874c884486f7c2513e253cad6e"
+      "sha256": "5e1d8800450dac41cb7be2a69b0d631a21b8f7e1344a77feaf91a6aece1ff3c8"
     }
   ]
 }

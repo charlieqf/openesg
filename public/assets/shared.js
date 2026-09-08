@@ -69,7 +69,7 @@
     return { distribution, checks: g.checks.length, files: g.files.length, effectiveFacts: g.facts.filter(f => effective(g, f)).length, pendingFacts: pendingFacts.length, pendingSources: pendingSources.length, units: g.units.length, reviewedUnits: reviewedUnits.length, affectedUnits: g.units.filter(u => u.reviewRequired).length, builds: g.builds.length, pending: pendingSources.length + pendingFacts.length + g.units.filter(u => u.status === 'review' || u.reviewRequired).length + g.mappings.filter(m => !m.removed && ['candidate', 'needs_review'].includes(m.status)).length, passedGates: gates.filter(r => r.pass).length, failedGates: gates.filter(r => !r.pass).length, canBuild: gates.every(r => r.pass) };
   };
   function record(g, action, title, objectId, reason, context) {
-    g.audit.unshift({ id: 'AUD-' + context.runId + '-' + (g.audit.length + 1), node: action, title, objectId, actor: '林悦（虚构）', time: context.time, reason: reason || '本地演示操作', inputHash: context.inputHash, status: 'applied', runId: context.runId, attempt: 1 });
+    g.audit.unshift({ id: 'AUD-' + context.runId + '-' + (g.audit.length + 1), node: action, title, objectId, actor: D.demoActor(action).name, role: D.demoActor(action).role, submittedBy: ['approveUnit', 'lockUnit', 'approveBuild', 'rejectBuild', 'approveSource', 'acceptFact'].includes(action) ? '林悦（虚构）' : undefined, time: context.time, reason: reason || '本地演示操作', inputHash: context.inputHash, status: 'applied', runId: context.runId, attempt: 1 });
     g.lastPreflight = null;
   }
   function deriveUnit(unit) {
@@ -117,7 +117,7 @@
         need(files.length && files.every(id => byId(g.files, id)?.family === family.id), '只能选择当前 Family 的来源文件。');
         need(files.filter(id => byId(g.files,id)?.type === 'Excel').length === 1, '环境来源集合必须且只能采用一份定量主表；补充说明不能单独替代主表。');
         byId(g.sourceSets, family.selectedSet).status = 'superseded';
-        set.files = unique(files); set.status = 'effective'; set.reason = reason; set.approvedBy = '林悦（虚构）'; set.approvedAt = ctx.time;
+        set.files = unique(files); set.status = 'effective'; set.reason = reason; set.approvedBy = D.demoActor(action.type).name; set.approvedAt = ctx.time;
         family.selectedSet = set.id;
         g.files.filter(f => f.family === family.id).forEach(f => { f.status = files.includes(f.id) ? (f.type === 'Excel' ? 'authoritative' : 'supporting') : 'superseded'; });
         g.tasks.filter(t => t.type === 'source' && t.objectId === family.id).forEach(t => { t.status = 'applied'; });
@@ -134,7 +134,7 @@
         need(fact.locatorIds.length && fact.locatorIds.every(id => byId(g.locators, id)), '缺少原始证据定位。');
         const previousIds = g.facts.filter(f => f.factId === fact.factId && f.status === 'effective').map(f => f.id);
         g.facts.filter(f => previousIds.includes(f.id)).forEach(f => { f.status = 'superseded'; });
-        fact.status = 'effective'; fact.reviewedBy = '林悦（虚构）'; fact.reviewedAt = ctx.time; fact.reviewReason = reason;
+        fact.status = 'effective'; fact.reviewedBy = D.demoActor(action.type).name; fact.reviewedAt = ctx.time; fact.reviewReason = reason;
         g.mappings.filter(m => !m.removed && m.factIds.some(id => previousIds.includes(id))).forEach(m => { m.history.push(clone({ ...m, history: [] })); m.status = 'needs_review'; m.version += 1; m.reason = '引用事实已更新，请重新核对覆盖。'; m.confirmedBy = ''; });
         g.units.filter(u => u.factIds.some(id => previousIds.includes(id))).forEach(u => { u.reviewRequired = true; u.issues = ['事实 ' + fact.factId + ' 已发布新版本，正文需复核。']; });
         title = '事实新版本生效，标记依赖对象待复核'; break;
@@ -157,7 +157,7 @@
         need(selectedFacts.every(id => byId(g.facts, id)), '映射包含未知事实。');
         mapping.history.push(clone({ ...mapping, history: [] })); mapping.version += 1;
         mapping.removed = false; mapping.factIds = unique(selectedFacts); mapping.locatorIds = unique(selectedFacts.flatMap(id => byId(g.facts, id).locatorIds));
-        mapping.status = state; mapping.reason = reason; mapping.confirmedBy = '林悦（虚构）'; mapping.disposition = ['covered', 'not_applicable'].includes(state) ? 'approved' : (action.disposition || 'pending');
+        mapping.status = state; mapping.reason = reason; mapping.confirmedBy = D.demoActor('editMapping').name; mapping.disposition = ['covered', 'not_applicable'].includes(state) ? 'approved' : (action.disposition || 'pending');
         title = '确认披露覆盖与证据映射'; break;
       }
       case 'removeMapping': {
@@ -175,11 +175,11 @@
         need(unit.fileExists && unit.body.trim(), '正文文件不完整。');
         need(unit.frameworkVersion === g.framework.version && g.framework.status === 'published', '请先同步已发布的框架版本。');
         need(unit.checkIds.every(id => ['covered', 'not_applicable'].includes(coverage(g, id))), '关联检查项仍存在缺口或待复核映射。');
-        need(unit.factIds.length || unit.checkIds.every(id => coverage(g, id) === 'not_applicable'), '正文缺少有效事实引用。');
+        need(unit.factIds.length || unit.checkIds.every(id => coverage(g, id) === 'not_applicable'), '正文缺少有效事实引用。请使用事实卡上的“插入引用”；手写半角括号不会建立引用关联。');
         need(unit.factIds.every(id => effective(g, byId(g.facts, id))), '正文仍引用未生效或已替代的事实。');
         need(!unit.externalBody, '请先处理外部文件修改。');
         unit.status = 'ready'; unit.reviewRequired = false; unit.issues = []; unit.approvedHash = unit.contentHash;
-        unit.comments.push({ author: '林悦（虚构）', text: reason, date: ctx.time }); title = '正文审核通过'; break;
+        unit.comments.push({ author: D.demoActor(action.type).name, role: D.demoActor(action.type).role, text: reason, date: ctx.time }); title = '正文审核通过'; break;
       }
       case 'lockUnit': need(unit && unit.status === 'ready' && !unit.reviewRequired, '仅可锁定审核通过且无待复核事项的单元。'); unit.status = 'locked'; title = '锁定已审核单元'; break;
       case 'externalChange':
@@ -223,7 +223,7 @@
       case 'publishChecklist':
         need(reason, '请填写清单发布意见。'); need(g.checklist.status !== 'published', '当前清单已发布。');
         need(g.checks.every(c => c.primaryClauses.length && c.sourceId && c.applicability), '检查项缺少主条款或适用规则。');
-        g.checklist.status = 'published'; g.checklist.reviewedBy = '林悦（虚构）'; g.checklist.reviewedAt = ctx.time;
+        g.checklist.status = 'published'; g.checklist.reviewedBy = D.demoActor(action.type).name; g.checklist.reviewedAt = ctx.time;
         g.checks.forEach(c => { c.status = 'published'; c.version = g.checklist.version; }); title = '发布披露检查清单新版本'; break;
       case 'importFile': {
         const template = byId(g.files, action.template || 'FILE-ENV-2'); need(template, '演示文件不存在。');
@@ -251,7 +251,7 @@
       }
       case 'approveBuild': {
         const b = byId(g.builds, action.id); need(b && b.status === 'ready', '请选择待最终审核的构建版本。'); need(reason, '请填写最终审核意见。');
-        b.status = 'approved'; b.approvedBy = '林悦（虚构）'; b.approvedAt = ctx.time; b.reviewReason = reason; title = '批准模拟报告版本'; break;
+        b.status = 'approved'; b.approvedBy = D.demoActor(action.type).name; b.approvedAt = ctx.time; b.reviewReason = reason; title = '批准模拟报告版本'; break;
       }
       case 'rejectBuild': {
         const b = byId(g.builds, action.id); need(b && b.status === 'ready', '只能拒绝待审核构建。'); need(reason, '请填写拒绝理由。'); b.status = 'rejected'; b.reviewReason = reason; title = '拒绝构建，保留输出与审核记录'; break;

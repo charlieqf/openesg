@@ -155,7 +155,15 @@
     if (id === 'model-failed') graph.actions.push({ id: 'MA-DEMO-FAILED', action_type: 'compare', label: '比较环境数据版本', context_pack_id: 'CP-DEMO-FAILED', target_object_ids: ['FILE-ENV-1', 'FILE-ENV-2'], target_type: 'file', target_file_paths: graph.files.slice(0, 2).map(f => f.path), instruction: '比较选中版本，列出数值及口径差异。', output_mode: 'suggestion', status: 'failed', model_config_snapshot: { service: '本地模型（模拟）', model: 'demo-reviewer', temperature: 0 }, output_files: [], approved_by: null, approved_at: null, error: '模拟连接失败：模型服务不可用。浏览与人工编辑不受影响。', attempt: 1, startedAt: 0, inputHash: '', output: '', history: [{ status: 'failed', note: '模拟连接超时' }] });
     return graph;
   }
-  const api = { version: '2026.09.07.1', schemaVersion: 1, pages, scenes, labels, clone, fingerprint, makeScene, makeBuild, addCandidate };
+  // Named demo identities make responsibilities visible; no real permissions.
+  function demoActor(action) {
+    if (['approveSource'].includes(action)) return { name: '许岚（虚构）', role: '收资管理员 · 来源审核示意' };
+    if (['acceptFact', 'rejectFact', 'requestEvidence', 'editMapping'].includes(action)) return { name: '陈澄（虚构）', role: '事实审核人' };
+    if (['approveUnit', 'lockUnit', 'approveBuild', 'rejectBuild'].includes(action)) return { name: '周宁（虚构）', role: '报告审核人' };
+    if (action === 'publishChecklist') return { name: '何宁（虚构）', role: '合规管理员' };
+    return { name: '林悦（虚构）', role: 'ESG 撰写人' };
+  }
+  const api = { version: '2026.09.07.1', schemaVersion: 1, pages, scenes, labels, clone, fingerprint, makeScene, makeBuild, addCandidate, demoActor };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.ESGDemo = api;
 })(typeof window !== 'undefined' ? window : globalThis);
