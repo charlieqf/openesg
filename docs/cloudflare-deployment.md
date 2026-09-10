@@ -2,11 +2,20 @@
 
 更新日期：2026-09-10。目标仓库：`charlieqf/openesg`。以下是本次实际发布记录；后面的连接 GitHub 步骤仅为可选配置，不表示已经启用自动部署。
 
-## 支撑视图候选版本（尚未发布）
+## 当前发布记录：P00–P14（2026-09-10）
 
-本地已完成 P11–P14 和现有页面状态补充，资源基线为 `2026.09.10.support.1`，包含 45 个运行文件（另有 `_headers`）。[设计与本地验收记录](support-views-20260910.md) 已更新。本轮尚未调用 Cloudflare 发布，也未提交或推送 GitHub；下方 38 文件的发布记录仍对应上一轮线上版本，不能当成此次新页面已上线的证据。
+用户已明确批准 commit、push 和发布到现有 Cloudflare 公开站点。
 
-## 当前发布记录（2026-09-10）
+- 网址：[OpenESG](https://openesg.openesg-ui-prototype.workers.dev/)，P00–P14 已上线，访问范围与 Worker 名称不变。
+- 产品提交：`33c1dac`，已推送至 `charlieqf/openesg` 的 `main`。部署前 45 个运行文件与通过验收的基线 `2026.09.10.support.1` 完全一致，复用上一轮成功构建。
+- 发布时间：2026-09-10 06:23:33 UTC / 16:23:33 Australia/Sydney。
+- Cloudflare 版本：`21a4aa49-4abf-4f5d-9a46-19d9098c370e`，部署列表确认 100% 流量。
+- 使用现有 Wrangler 配置上传 `public/`：24 个新增/变更资源，21 个已有资源复用；不创建新站点、不启用 Git 自动部署、不改变访问策略。
+- 发布后检查：2026-09-10T06:25:36.066Z，首页 200，45/45 个运行文件均为 200 且 SHA-256 匹配；README、Wrangler 配置、测试和两份设计文档路径全部 404。
+- 本轮线上证据独立保存在 `verification/cloudflare-2026.09.10.support.1/online-resources.json`，不覆盖 P00 发布的历史证据。
+- [设计与验收记录](support-views-20260910.md) 说明静态状态、虚构数据及未实现服务的边界。此次发布没有重新进行线上浏览器视觉检查；复用发布前本地浏览器验收，并验证线上资源字节一致。
+
+## 历史发布记录：P00–P10（2026-09-10）
 
 - 现有站点：[OpenESG 报告项目](https://openesg.openesg-ui-prototype.workers.dev/)。根入口为 P00，进入项目后保留 P01–P10。
 - 发布时间：2026-09-10 14:06（Australia/Sydney），即 04:06 UTC。
