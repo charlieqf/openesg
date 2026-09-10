@@ -50,7 +50,7 @@
   const U = { escape, icon, button, badge, link, panel, notice, metric, empty, fileType, field, option, selectInput, handlers, pageState, current: () => current };
   window.ESGUI = U;
   const pageKey = document.body.dataset.page || 'index';
-  const page = D.pages.find(p => p.key === pageKey);
+  const page = [...D.pages, ...window.ESGSupport.pages].find(p => p.key === pageKey);
   function toast(message, isError = false) {
     const el = document.createElement('div'); el.className = 'toast' + (isError ? ' error' : ''); el.textContent = message;
     document.getElementById('toasts').append(el); setTimeout(() => el.remove(), isError ? 8500 : 4200);
@@ -149,25 +149,28 @@
     return button(icon('spark') + label, 'model', { label, actionType, targetType, ids: ids || [current.id], operation, page: pageKey }, 'btn-ai', E.meta().readonly || (ids ? !ids.length : !current.id));
   }
   function toolbar(g) {
+    if (window.ESGSupport.pages.some(p => p.key === pageKey) && U.support) return U.support.objectBar();
     let object; try { object = E.resolveObject(g, current.type, current.id); } catch { current = { type: 'project', id: g.project.id }; object = g.project; }
     const hash = object.contentHash || object.hash || E.fingerprint(object);
     return '<div class="object-bar"><div class="object-path"><span class="meta">' + escape(current.id) + ' · ' + (object.version ? 'v' + object.version + ' · ' : '') + escape(hash) + ' · 工作区路径示意</span><code class="mono" title="' + escape(object.path) + '">' + escape(object.path) + '</code></div><div class="actions">' + button(icon('external') + '打开文件', 'openFile') + button(icon('copy') + '复制路径', 'copyPath') + button(icon('spark') + '生成上下文', 'context') + button(icon('history') + '查看 Diff', 'diff') + '</div></div>';
   }
   function shell(content) {
+    if (pageKey === 'index' && U.portfolio) return U.portfolio.shell(content);
     const g = E.state(), meta = E.meta(), s = E.stats(g), scene = D.scenes.find(x => x.id === g.scene);
-    return '<a class="skip-link" href="#main-content">跳到主要内容</a><aside class="rail"><a class="brand" href="index.html" aria-label="OpenESG 原型导航"><span class="brand-mark">O</span><span class="brand-name">OpenESG<small>LOCAL WORKSPACE</small></span></a><div class="rail-project"><strong>' + escape(g.project.name) + '</strong><span>' + escape(g.project.period) + ' 年度 · 虚构项目</span></div><div class="nav-label">报告工作流</div><nav aria-label="主要页面">' + D.pages.map((p, i) => (i === 1 || i === 6 ? '<div class="nav-divider"></div>' : '') + '<a title="' + p.id + ' · ' + p.label + '" class="nav-item ' + (pageKey === p.key ? 'active' : '') + '" ' + (pageKey === p.key ? 'aria-current="page" ' : '') + 'href="' + escape(E.url(p.key, 'project', g.project.id)) + '">' + icon(icons[i]) + '<span class="nav-text">' + p.label + '</span><span class="nav-number">' + p.id.slice(1) + '</span></a>').join('') + '</nav><div class="rail-bottom"><i class="local-light"></i><span>本地演示 · 无外部连接</span></div></aside><div class="app"><header class="topbar"><div class="breadcrumbs"><span>工作区</span><span>/</span><strong>' + escape(g.project.name) + '</strong><span>/</span><span>' + (page?.label || '原型导航') + '</span></div><div class="top-actions">' + button(icon('layers') + '<span>演示场景</span>', 'scenes', {}, 'btn-quiet') + button(icon('spark') + '模型动作 <span class="count">' + E.count(g.actions.filter(a => ['pending', 'running', 'review', 'failed'].includes(a.status))) + '</span>', 'tasks', {}, 'btn-quiet') + '<span class="avatar">林</span><span class="user-label">林悦 · ESG 撰写人</span></div></header><div class="demo-strip"><span>虚构演示数据 <span class="scope-extra">· 不代表客户实际情况或监管结论</span></span><span>' + (meta.readonly ? '固定快照 · 只读' : escape(scene?.name || g.scene)) + ' · ' + (meta.readonly ? '<button data-action="currentVersion">返回当前工作版本</button>' : '<button data-action="reset">重置演示</button>') + '</span></div><main id="main-content" class="main" tabindex="-1">' + (meta.stale ? notice('另一页面已更新状态，当前编辑基线已过期。请保存文本副本后重新加载。' + button('重新加载', 'currentVersion'), 'danger') : '') + content + toolbar(g) + '</main></div>';
+    return '<a class="skip-link" href="#main-content">跳到主要内容</a><aside class="rail"><a class="brand" href="index.html" aria-label="OpenESG 报告项目"><span class="brand-mark">O</span><span class="brand-name">OpenESG<small>LOCAL WORKSPACE</small></span></a><a class="workspace-back" href="index.html" aria-label="返回报告项目列表">' + icon('back') + '<span>报告项目</span></a><div class="rail-project"><strong>' + escape(g.project.name) + '</strong><span>' + escape(g.project.period) + ' 年度 · 虚构项目</span>' + button(icon('layers') + '<span>切换项目</span>', 'portfolioSwitch', {}, 'project-switch-button') + '</div><div class="nav-label">报告工作流</div><nav aria-label="主要页面">' + [...D.pages, ...window.ESGSupport.pages].map((p, i) => (i === 10 ? '<div class="nav-divider"></div><div class="nav-label support-nav-label">项目支撑</div>' : '') + (i === 1 || i === 6 ? '<div class="nav-divider"></div>' : '') + '<a title="' + p.id + ' · ' + p.label + '" class="nav-item ' + (pageKey === p.key ? 'active' : '') + '" ' + (pageKey === p.key ? 'aria-current="page" ' : '') + 'href="' + escape(E.url(p.key, 'project', g.project.id)) + '">' + icon(p.icon || icons[i]) + '<span class="nav-text">' + p.label + '</span><span class="nav-number">' + p.id.slice(1) + '</span></a>').join('') + '</nav><div class="rail-bottom"><i class="local-light"></i><span>本地演示 · 无外部连接</span></div></aside><div class="app"><header class="topbar"><div class="breadcrumbs"><a href="index.html">报告项目</a><span>/</span>' + button(escape(g.project.name) + icon('down'), 'portfolioSwitch', {}, 'crumb-project') + '<span>/</span><span>' + (page?.label || '原型导航') + '</span></div><div class="top-actions">' + button(icon('layers') + '<span>演示场景</span>', 'scenes', {}, 'btn-quiet', meta.readonly) + button(icon('spark') + '模型动作 <span class="count">' + E.count(g.actions.filter(a => ['pending', 'running', 'review', 'failed'].includes(a.status))) + '</span>', 'tasks', {}, 'btn-quiet') + '<span class="avatar">林</span><span class="user-label">林悦 · ESG 撰写人</span></div></header><div class="demo-strip"><span>虚构演示数据 <span class="scope-extra">· 不代表客户实际情况或监管结论</span></span><span>' + (meta.archived ? '项目已归档 · 只读' : meta.readonly ? '固定快照 · 只读' : escape(g.initialization && !g.files.length ? '新项目 · 初始化中' : scene?.name || g.scene)) + ' · ' + (meta.archived ? '<a href="index.html">返回列表恢复</a>' : meta.readonly ? '<button data-action="currentVersion">返回当前工作版本</button>' : '<button data-action="reset">重置演示</button>') + '</span></div><main id="main-content" class="main" tabindex="-1">' + (meta.stale ? notice('另一页面已更新状态，当前编辑基线已过期。请保存文本副本后重新加载。' + button('重新加载', 'currentVersion'), 'danger') : '') + content + toolbar(g) + '</main></div>';
   }
   function heading(eyebrow, title, description, actions = '') { return '<div class="page-heading"><div><div class="eyebrow">' + eyebrow + '</div><h1>' + title + '</h1><p>' + description + '</p></div><div class="heading-actions">' + actions + '</div></div>'; }
   function render() {
     const g = E.state(), meta = E.meta(), p = new URLSearchParams(location.hash.slice(1));
     const renderKey = [meta.runId, pageKey, p.get('object'), p.get('mode'), p.get('snapshot')].join(':');
     const preserved = renderKey === lastRenderKey ? [...document.querySelectorAll('#app [data-preserve][data-dirty="true"]')].map(el => ({ id: el.id, value: el.value, dirty: el.dataset.dirty, start: el.selectionStart, end: el.selectionEnd, focused: document.activeElement === el })) : [];
-    if (meta.error) document.getElementById('app').innerHTML = '<div class="error-page"><div class="eyebrow">OPENESG · 本地演示</div><h1>无法恢复当前工作区</h1>' + notice(escape(meta.error), 'danger') + '<div class="actions mt">' + button('重置本原型数据', 'reset') + button('导入演示快照', 'importSnapshot') + '</div><p class="meta mt">不会清除其他网站或本地项目的数据。</p></div>';
+    if (meta.error && pageKey !== 'index') document.getElementById('app').innerHTML = '<div class="error-page"><div class="eyebrow">OPENESG · 本地演示</div><h1>无法恢复当前工作区</h1>' + notice(escape(meta.error), 'danger') + '<div class="actions mt">' + '<a class="btn" href="index.html">返回报告项目列表</a>' + button('重置此项目演示数据', 'reset') + button('导入演示快照', 'importSnapshot') + '</div><p class="meta mt">不会清除其他网站或本地项目的数据。</p></div>';
     else {
-      const view = window.ESGViews?.[pageKey];
+      const view = pageKey === 'index' ? U.portfolio?.view : window.ESGViews?.[pageKey];
       const content = view ? view(g, U) : heading('PROTOTYPE INDEX', 'OpenESG 工作台原型', '同一项目、同一证据链，十个独立 HTML 工作视图。') + '<div class="index-grid">' + D.pages.map((p, i) => '<a class="index-card" href="' + p.file + '"><div class="between"><span class="eyebrow">' + p.id + ' / ' + p.stage + '</span>' + icon(icons[i]) + '</div><h2>' + p.title + '</h2><p>' + ['项目进度、待办与阻断原因', '披露要求、原始条款与版本审核', '文件内容、证据定位与双向索引', '文件版本比较与权威来源裁定', '核对事实变化，保留有效与历史版本', '检查项、有效事实与原始证据的对应关系', '章节顺序、稳定要点与参考写法', '逐要点编辑、引用、Diff 与审核锁定', '八项预检、连续预览与确定性合成', '冻结版本、构建清单与示例交付'][i] + '</p><span class="small success-text">打开工作视图 →</span></a>').join('') + '</div>';
       document.getElementById('app').innerHTML = shell(content);
       decorateTables(document.getElementById('app'));
+      if (window.ESGSupport.pages.some(p => p.key === pageKey)) { const nav=document.querySelector('.rail nav'), active=nav?.querySelector('a.active'); if(active) nav.scrollTop=Math.max(0,active.offsetTop-nav.offsetTop-nav.clientHeight/2+24); }
       U.design?.resizePrompts();
       preserved.forEach(item => { const el = document.getElementById(item.id); if (el) { el.value = item.value; if (item.dirty) el.dataset.dirty = item.dirty; if (item.focused) { el.focus({ preventScroll: true }); if (typeof el.setSelectionRange === 'function') el.setSelectionRange(item.start, item.end); } } });
     }
@@ -196,7 +199,7 @@
   handlers.filters = advancedFilters;
   handlers.clearFilters = () => E.setFilters({});
   handlers.reset = () => reasonlessReset(E.meta().sceneId);
-  function reasonlessReset(scene) { ask('重置演示运行', notice('将清除本次演示改动、未完成任务和本地派生快照。预置历史报告会恢复；不会影响其他网站数据。', 'warning') + '<p class="small mt">目标场景：' + escape(D.scenes.find(s => s.id === scene)?.name || scene) + '</p>', '确认重置', () => { E.reset(scene); toast('已恢复场景基线。'); }); }
+  function reasonlessReset(scene) { ask('重置演示运行', notice('将清除本次演示改动、未完成任务和本地派生快照。预置历史报告会恢复；只重置当前报告项目，不会影响其他项目或网站数据。', 'warning') + '<p class="small mt">目标场景：' + escape(D.scenes.find(s => s.id === scene)?.name || scene) + '</p>', '确认重置', () => { E.reset(scene); toast('已恢复场景基线。'); }); }
   handlers.scenes = () => ask('切换演示场景', field('scene', '场景即预置状态快照', selectInput('scene', D.scenes.map(s => [s.id, s.name]), E.meta().sceneId)) + notice('切换会重置当前演示运行。需要保留当前状态时，请先关闭此框并导出快照。', 'warning') + '<div class="actions mt">' + button(icon('download') + '导出当前快照', 'exportSnapshot') + button(icon('upload') + '导入快照', 'importSnapshot') + '</div>', '重置并切换', values => { E.reset(values.scene); toast('已载入选定场景。'); });
   handlers.copyPath = () => copy(E.resolveObject(E.state(), current.type, current.id).path, '已复制演示工作区路径。');
   handlers.openFile = payload => {
@@ -245,7 +248,7 @@
   handlers.model = p => {
     const ids = p.ids || [current.id], g = E.state();
     const textarea = document.getElementById('unit-body'); const selection = textarea && textarea.selectionStart !== textarea.selectionEnd ? textarea.value.slice(textarea.selectionStart, textarea.selectionEnd) : '';
-    E.need(!E.meta().readonly, '固定快照不能执行模型动作。');
+    E.need(!E.meta().readonly, '只读项目或固定快照不能执行模型动作。');
     E.need(!document.querySelector('#app [data-dirty="true"]'), '请先保存当前草稿，再基于固定版本生成模型建议。');
     E.need(p.operation !== 'rewriteSelection' || selection, '请先在正文中选中需要改写的文字。');
     E.need(p.operation !== 'merge' || ids.length > 1, '合并至少需要选择两个检查项。');

@@ -2,14 +2,17 @@
   "name": "openesg-ui-prototype",
   "version": "1.0.0",
   "private": true,
-  "description": "Ten-page OpenESG interactive prototype using fictional data only",
+  "description": "OpenESG report portfolio, ten workflow views and four support views using fictional data only",
   "engines": {
     "node": ">=22"
   },
   "scripts": {
     "start": "node server.cjs",
-    "test": "node --test tests/state.test.cjs tests/static.test.cjs",
+    "test": "node --test tests/state.test.cjs tests/projects.test.cjs tests/support.test.cjs tests/static.test.cjs",
     "build": "npm test",
-    "test:design": "node tests/design-review.cjs"
+    "test:design": "node tests/design-review.cjs",
+    "test:portfolio": "node tests/portfolio-browser.cjs",
+    "test:flow": "node tests/browser-flow.cjs",
+    "test:support": "node tests/support-browser.cjs"
   }
 }

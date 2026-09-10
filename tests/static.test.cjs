@@ -6,6 +6,7 @@ const crypto = require('node:crypto');
 const root = path.resolve(__dirname, '..');
 const publicRoot = path.join(root, 'public');
 const D = require('../public/assets/demo-data.js');
+const S = require('../public/assets/support-data.js');
 const baseline = require('./runtime-baseline.json');
 const { createServer } = require('../server.cjs');
 
@@ -20,7 +21,8 @@ function publicFiles(dir = publicRoot) {
 test('ten pages and navigation ship every referenced asset', () => {
   assert.equal(D.pages.length, 10);
   assert.equal(new Set(D.pages.map(p => p.file)).size, 10);
-  for (const page of [{ file: 'index.html', key: 'index' }, ...D.pages]) {
+  assert.equal(S.pages.length, 4);
+  for (const page of [{ file: 'index.html', key: 'index' }, ...D.pages, ...S.pages]) {
     const html = fs.readFileSync(path.join(publicRoot, page.file), 'utf8');
     assert.ok(html.includes('data-page="' + page.key + '"'));
     assert.match(html, /lang="zh-CN"/);
@@ -36,7 +38,7 @@ test('ten pages and navigation ship every referenced asset', () => {
 });
 
 test('exported runtime remains identical to the reviewed source baseline', () => {
-  assert.equal(baseline.files.length, 36);
+  assert.equal(baseline.files.length, 45);
   for (const item of baseline.files) {
     const actual = crypto.createHash('sha256').update(fs.readFileSync(path.join(root, item.file))).digest('hex');
     assert.equal(actual, item.sha256, item.file + ': review changes before updating the baseline');
@@ -69,7 +71,7 @@ test('local preview serves all pages and rejects private files and mutations', a
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   const origin = 'http://127.0.0.1:' + server.address().port;
   try {
-    for (const page of ['', ...D.pages.map(p => p.file)]) {
+    for (const page of ['', ...D.pages.map(p => p.file), ...S.pages.map(p => p.file)]) {
       const response = await fetch(origin + '/' + page);
       assert.equal(response.status, 200, page || 'index');
       assert.match(await response.text(), /OpenESG/);

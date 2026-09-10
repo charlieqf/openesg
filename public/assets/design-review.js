@@ -6,6 +6,7 @@
   const { escape: h, button: b, badge, link, panel, notice, heading } = U;
   const drafts = new Map(), pointDrafts = new Map();
   let runId = E.meta().runId;
+  let promptScene = E.state().support?.promptScene || 'baseline';
   const partOf = c => c.topic === '管治' ? 'B' : c.topic === '气候' ? 'D' : 'C';
   const partNames = { B: 'B · 管治与汇报', C: 'C · 环境与社会', D: 'D · 气候相关披露' };
   const metadata = {
@@ -17,10 +18,11 @@
   const groupOf = c => metadata[c.layoutSourceId || c.id]?.[0] || c.topic;
   const clauseNumber = c => c.primaryClauses?.join('、') || '待标注';
   const clauseTitle = c => clauseNumber(c) + ' · ' + c.title;
-  const defaults = c => ({
+  const baseDefaults = c => ({
     writing: '围绕“' + c.title + '”组织披露。\n必须覆盖：' + c.elements.join('；') + '。\n先说明责任与范围，再列年度行动和已确认结果。仅使用有效事实并插入证据引用；缺失信息标记“待补充”，不推断数值。',
     validation: '逐项检查“' + c.title + '”：' + c.elements.join('；') + '。\n核对每项要求对应的正文、有效事实及来源；检查报告期、单位和口径。\n按“要求／证据／缺项／修改建议”输出；证据不足标记待核实，不因语言完整而判为合规。'
   });
+  const defaults = c => Object.fromEntries(Object.entries(baseDefaults(c)).map(([kind,text]) => [kind, window.ESGSupport.promptText(E.state(),c,kind,text)]));
   const readOnly = () => E.meta().readonly;
   function draftFor(c) { return (!readOnly() && drafts.get(c.id)) || { ...defaults(c), saved: false, edited: false }; }
   function scaleItems(g) {
@@ -91,10 +93,12 @@
   function inherited(g, unit) { return unit.checkIds.map(id => E.byId(g.checks, id)).filter(Boolean); }
   function instruction(g, unit, kind) {
     const checks = inherited(g, unit);
-    return checks.map(c => '[' + c.id + ' · 清单 v' + g.checklist.version + ']\n' + defaults(c)[kind]).join('\n\n') + '\n\n[要点级补充 · 框架 v' + g.framework.version + ']\n' + (kind === 'writing' ? '采用“' + unit.type + '”形式，目标语言：' + g.project.language + '。先交代边界，再呈现结果；避免重复其他章节。' : '检查本要点与相邻章节的术语、数据引用是否一致；跨章节要求未获完整上下文时标记待核实。');
+    const profile = window.ESGSupport.promptProfile(g,unit);
+    return checks.map(c => '[' + c.id + ' · 清单 v' + g.checklist.version + (profile.scene !== 'baseline' ? ' · 提示词配置样例 v' + profile.version : '') + ']\n' + window.ESGSupport.promptText(g,c,kind,baseDefaults(c)[kind],unit)).join('\n\n') + '\n\n[要点级补充 · 框架 v' + g.framework.version + ']\n' + (kind === 'writing' ? '采用“' + unit.type + '”形式，目标语言：' + g.project.language + '。先交代边界，再呈现结果；避免重复其他章节。' : '检查本要点与相邻章节的术语、数据引用是否一致；跨章节要求未获完整上下文时标记待核实。');
   }
   function inheritedCards(g, unit, kind) {
-    return inherited(g, unit).map(c => '<details class="inherited-prompt"><summary>' + h(c.title) + '<span class="meta">' + h(c.id) + ' · v' + g.checklist.version + '</span></summary><p class="prompt-copy">' + h(defaults(c)[kind]) + '</p>' + link('checklist', 'check', c.id, '回到条目配置 →', {}, 'small') + '</details>').join('');
+    const profile=window.ESGSupport.promptProfile(g,unit);
+    return inherited(g, unit).map(c => '<details class="inherited-prompt"><summary>' + h(c.title) + '<span class="meta">' + h(c.id) + ' · 清单 v' + g.checklist.version + (profile.scene!=='baseline'?' · 提示词样例 v'+profile.version:'') + '</span></summary><p class="prompt-copy">' + h(window.ESGSupport.promptText(g,c,kind,baseDefaults(c)[kind],unit)) + '</p>' + link('checklist', 'check', c.id, '回到条目配置 →', {}, 'small') + '</details>').join('');
   }
   function frameworkPrompts(g, unit) {
     const kind = U.pageState.frameworkPromptKind || 'writing';
@@ -102,7 +106,8 @@
       '<label class="form-field mt" for="point-supplement"><span>要点级补充</span><textarea id="point-supplement" data-point-id="' + h(unit.id) + '" data-point-kind="' + kind + '" rows="4"' + (readOnly() ? ' readonly' : '') + '>' + h(pointDrafts.get(unit.id + ':' + kind) || (kind === 'writing' ? '采用' + unit.type + '形式；先交代边界，再呈现年度结果，避免重复其他章节。' : '检查相邻章节术语和数据口径；跨章节证据不足时标记待核实。')) + '</textarea></label><div class="actions">' + b('保存本页补充', 'savePointPrompt', { id: unit.id, kind }, 'btn-small', readOnly()) + b('查看组合预览', 'composedPrompt', { id: unit.id, kind }, 'btn-small') + b('多条关联 · 固定示例', 'multiPromptExample', { id: unit.id }, 'btn-small') + '</div><p class="meta mt">补充仅供本页演示；P08 展示一致的预置配置，不读取本页编辑。</p>');
   }
   function writingPrompts(g, unit) {
-    return '<section class="writing-prompt-summary"><div class="between"><strong class="small">本次撰写与检验配置</strong><span class="meta">' + inherited(g, unit).length + ' 条要求 · 清单 v' + g.checklist.version + ' / 框架 v' + g.framework.version + ' · 预置</span></div><div class="actions mt">' + b('查看撰写提示词', 'composedPrompt', { id: unit.id, kind: 'writing' }, 'btn-small') + b('查看校验提示词', 'composedPrompt', { id: unit.id, kind: 'validation' }, 'btn-small') + b('检验结果样例', 'validationDesign', { id: unit.id }, 'btn-small') + link('framework', 'unit', unit.id, '长期配置 →', {}, 'small') + '</div><p class="meta">任务内调整只作用于本次；不回写长期配置。</p></section>';
+    const profile=window.ESGSupport.promptProfile(g,unit);
+    return '<section class="writing-prompt-summary"><div class="between"><strong class="small">本次撰写与检验配置</strong><span class="meta">' + inherited(g, unit).length + ' 条要求 · 清单 v' + g.checklist.version + ' / 框架 v' + g.framework.version + (profile.scene!=='baseline'?' · '+h(profile.id)+'（状态样例）':' · 预置') + '</span></div><div class="actions mt">' + b('查看撰写提示词', 'composedPrompt', { id: unit.id, kind: 'writing' }, 'btn-small') + b('查看校验提示词', 'composedPrompt', { id: unit.id, kind: 'validation' }, 'btn-small') + b('检验结果样例', 'validationDesign', { id: unit.id }, 'btn-small') + link('framework', 'unit', unit.id, '长期配置 →', {}, 'small') + '</div><p class="meta">任务内调整只作用于本次；不回写长期配置。</p></section>';
   }
   function staleFacts(g, unit) { return E.citations(unit.body).map(id => E.byId(g.facts, id)).filter(f => f && !E.effective(g, f)); }
   function editorPresentation(g, unit, editor) {
@@ -232,5 +237,5 @@
   });
   document.addEventListener('change', event => { if (event.target.matches('[data-rule-query]')) { U.pageState.ruleQuery = event.target.value; U.render(); } });
   document.addEventListener('keydown', event => { if (event.key === 'Enter' && event.target.matches('[data-rule-query]')) { event.preventDefault(); U.pageState.ruleQuery = event.target.value; U.render(); } });
-  window.addEventListener('esg:change', () => { if (runId !== E.meta().runId) { runId = E.meta().runId; drafts.clear(); pointDrafts.clear(); U.pageState.ruleSelected = ''; U.render(); } });
+  window.addEventListener('esg:change', () => { const next = E.state().support?.promptScene || 'baseline'; if (runId !== E.meta().runId || promptScene !== next) { if(runId !== E.meta().runId) U.pageState.ruleSelected = ''; runId = E.meta().runId; promptScene=next; drafts.clear(); pointDrafts.clear(); U.render(); } });
 })();

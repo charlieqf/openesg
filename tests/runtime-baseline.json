@@ -1,50 +1,74 @@
 {
-  "sourceBaseline": "2026.09.08.design-review.2",
-  "scope": "Fictional static UI follow-up; source and public runtime byte-identical. Page-only prompts; historical evidence is not current acceptance. Deployment tracked in docs/cloudflare-deployment.md.",
+  "sourceBaseline": "2026.09.10.support.1",
+  "scope": "P00 portfolio, P01-P10 workflow and P11-P14 support views. Fictional browser-local design state only. See docs/support-views-20260910.md; historical evidence is not current acceptance.",
   "files": [
     {
       "file": "public/01-project-overview.html",
-      "sha256": "d7c2134b15e9ecdbaf4540f8704a46834dd328a5dc7395fcf1ab271db02d4609"
+      "sha256": "e068888ce03a7d8320edb1e904a06b80c86992c3d833a0ebe29ef334ed67eeb6"
     },
     {
       "file": "public/02-disclosure-checklist.html",
-      "sha256": "0c909709bf13dc27ae6ab68995e730f3b67d1992b1efa26136d70cd886aea8b3"
+      "sha256": "8354ff7fd8616512530053525cc292b513b2c04be8900466e66af2d72af52284"
     },
     {
       "file": "public/03-intake-files.html",
-      "sha256": "d203f3418ea131503008709c8ff020bda82fdbe3733c94fe7a92cac647ba53de"
+      "sha256": "ae4c432db9818486414be65d252b4406065e7b9f51ed05466709aefccbbb3b63"
     },
     {
       "file": "public/04-authoritative-sources.html",
-      "sha256": "0df8f4a3818f20f3601a7cba8712c6d3716d503dcc771783f2f50514bf023c32"
+      "sha256": "e444d5d04158327474fdf1cb2950a21c49991a5a6384ad8a6f5e98cd90f43a34"
     },
     {
       "file": "public/05-fact-review.html",
-      "sha256": "40a906e281b1c67ec52a8393ad1c1dae99037e15f9ed3ce8d5c513529ede2b3c"
+      "sha256": "e3a53ff83108c7a380a68bcb4efef3944a2b889f9bd8de31c03fbe889f365a32"
     },
     {
       "file": "public/06-evidence-mapping.html",
-      "sha256": "ab9eb6ef85f263ed1a91dcbba8051e353ed77d698aed79d8375a27d4fa24f2d8"
+      "sha256": "3003c2f1b33bbbf058bb654d1a77800a9a3313527ffa03aa2e7f8b6e0dc5d074"
     },
     {
       "file": "public/07-writing-framework.html",
-      "sha256": "5bad0ecd560edf345ccf3e4c7cccf9967a5c9cf13c4dc792e3d55633e3f0161b"
+      "sha256": "13b68354c1af94a45f2826fddd7fd0d5f5e849ccfeca1eaf1205fa48e8c3bc17"
     },
     {
       "file": "public/08-writing-workbench.html",
-      "sha256": "15e7777222f273d69c094f9b2fa38e71e4ca50630856b36f34251126ac8e380c"
+      "sha256": "5d6c2822f5dcbd9bcb03f3db39bdb62501bb3a89cbc6bd4ef704784f19facb72"
     },
     {
       "file": "public/09-report-composer.html",
-      "sha256": "a26c570dad607d9d46b7829ac84ecf276f78be8f9778d6b94d60eb91c29895b8"
+      "sha256": "031c062d1fe89a772cffa5bc0ffcb887a66835facdb4f82a8b75b15aa15cb863"
     },
     {
       "file": "public/10-report-delivery.html",
-      "sha256": "532ae7a1cee3a0529ef215347a6d1031bfc4f526518cf2fcdaf2ac2424708e7f"
+      "sha256": "afe3a7d7d376046b581c3862174fbad41d4981c53ab768de8aa0f6261def0179"
+    },
+    {
+      "file": "public/11-project-settings.html",
+      "sha256": "62133e9d3ecdf0d704b21232b2ee33ddf138101886519dfd0524c38161ea9ff6"
+    },
+    {
+      "file": "public/12-regulatory-library.html",
+      "sha256": "686648d33cb4645e6972a39da4f5ab410734bdd0c1807a02b8d3c62bf7e05410"
+    },
+    {
+      "file": "public/13-reference-library.html",
+      "sha256": "b61d1536265dec8a9520aa3aace3108e21f6a3b18c90920dfc2c3cae6a4681d6"
+    },
+    {
+      "file": "public/14-runs-and-impact.html",
+      "sha256": "1929aea8da92d93e87245a2e508806f769eb25aa83284bc1fdc868200264b50b"
     },
     {
       "file": "public/assets/demo-data.js",
       "sha256": "e9b18cb07346edcaa940f7f06535cbbff6e80ea15fe1a43b6fe91dbb284b8b4c"
+    },
+    {
+      "file": "public/assets/demo-files/REF-CLI-1.md",
+      "sha256": "23385d62a73f5b5c222b5305ce449c2edc07bf49a0dc84f99ced230cdf796400"
+    },
+    {
+      "file": "public/assets/demo-files/REF-FIN-1.md",
+      "sha256": "6ac03e9f821a05cdeffc9f13dffd6fab5acf87e2f63d1c919472f8a626cb6e4d"
     },
     {
       "file": "public/assets/demo-files/climate.md",
@@ -103,14 +127,6 @@
       "sha256": "56357c4c9d87a954a10910c8a6151dde46efc1766eb6f2e58f6a062c6657a499"
     },
     {
-      "file": "public/assets/demo-files/REF-CLI-1.md",
-      "sha256": "23385d62a73f5b5c222b5305ce449c2edc07bf49a0dc84f99ced230cdf796400"
-    },
-    {
-      "file": "public/assets/demo-files/REF-FIN-1.md",
-      "sha256": "6ac03e9f821a05cdeffc9f13dffd6fab5acf87e2f63d1c919472f8a626cb6e4d"
-    },
-    {
       "file": "public/assets/demo-files/scan-error.md",
       "sha256": "87e490312959233b1ddc6485d7e8d6413db303466be5c94b74efb2202098f764"
     },
@@ -120,31 +136,51 @@
     },
     {
       "file": "public/assets/design-review.js",
-      "sha256": "a127484a0469c63d6f017a02a61aa83291eb785d37381c181233356924ebc03c"
+      "sha256": "e0ad88ed0dfd9a5b924c3fd63a28eb791c5a47ad3a13e72707db39f9043d5748"
+    },
+    {
+      "file": "public/assets/portfolio.js",
+      "sha256": "5695822de8eaa1d6a848b241b827e7c4bd4dbed0e78a8bd58b079b09182c41ab"
+    },
+    {
+      "file": "public/assets/projects-data.js",
+      "sha256": "bbfe79aac0b41c5fd06533a0517b65ea2a3da78b2d06cc9f00734fed1e5769d4"
     },
     {
       "file": "public/assets/shared.css",
-      "sha256": "8ab39c9ed69a1f9b6815554888306e2fb773295e8df74102ece69cda44437cae"
+      "sha256": "2a8a2c39e80bdea53d10f6dee2acf0b25b40f0a561d7e48e7c53f064df18caaf"
     },
     {
       "file": "public/assets/shared.js",
-      "sha256": "ffcf41b33aeff784fa61ade0c6c3fcfbd7a9911801c9bacf69d6e2e548c3a69f"
+      "sha256": "d590849a335f6078bcf7d9c37933b005496c8162a6b47a20774a38bddf15a9ed"
+    },
+    {
+      "file": "public/assets/support-data.js",
+      "sha256": "6d3cad8ac4728d1735465023e73de668e2249734d4cd9ca38925ad9f87af7d8a"
+    },
+    {
+      "file": "public/assets/support.css",
+      "sha256": "57e601578f184302c1000c60a469bb0338870719c451521ff8bc885d795ebb9c"
+    },
+    {
+      "file": "public/assets/support.js",
+      "sha256": "09a4d6b19d238547ab4e9f47f29ea4dafcdbaa851b6f947ec86c57c8475b4340"
     },
     {
       "file": "public/assets/ui.js",
-      "sha256": "cf334b33c9e83a7b705880c82a627df370c859af5cf197e2abddadc415398f6a"
+      "sha256": "4f9be1113dfc87c7e96da09a8794a53f6372c2efc9c59f2042c4c36df8b3a576"
     },
     {
       "file": "public/assets/views.js",
-      "sha256": "ac5342ddcc24a121ff35ee563ce385c33942944e25d41b06b1b87c7a90717476"
+      "sha256": "17a98643928a3992599ef2bc3e18c0257bf77fa28912b93e70309ab34d749d21"
     },
     {
       "file": "public/assets/webmcp.js",
-      "sha256": "2492a0877f1c862794689d708d7e0c891bfd6983727311cea812b52e18b98577"
+      "sha256": "aa8656ab7d00d107ed58424d5048106b0aa77aaf8d200f7664a3e73e8aa777fd"
     },
     {
       "file": "public/index.html",
-      "sha256": "5e1d8800450dac41cb7be2a69b0d631a21b8f7e1344a77feaf91a6aece1ff3c8"
+      "sha256": "b93a8ef32058cf4a6ea5342858f7b1b75a36a066046b81774bf9d856c1091823"
     }
   ]
 }

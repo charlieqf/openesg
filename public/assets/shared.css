@@ -5,6 +5,47 @@
   --esg-danger: #aa3d3d; --esg-info: #315d91; --esg-shadow: 0 8px 28px #12213208;
   --esg-radius: 12px; --rail: 216px; --font: 'Segoe UI', 'Microsoft YaHei UI', 'PingFang SC', sans-serif;
 }
+ .crumb-project.btn { font-size:13px; padding:0; min-height:28px; border:0; background:transparent; max-width:220px; white-space:normal; }
+/* P00 extends the existing workspace tokens; no second visual theme. */
+.workspace-back { display:flex; align-items:center; gap:10px; color:#c7d6dc; font-size:13px; margin:0 25px 12px; }
+.rail .project-switch-button { margin-top:10px; padding:5px 7px; min-height:30px; width:100%; color:#c7d6dc; background:transparent; border-color:#ffffff26; font-size:12px; }
+.rail .project-switch-button:hover { background:var(--esg-nav-soft); color:white; }
+.rail .btn.nav-item { width:100%; justify-content:flex-start; border:0; background:transparent; color:#c7d6dc; }
+.rail .btn.nav-item.active { background:#225144; color:white; }
+.rail .btn.nav-item:hover { background:var(--esg-nav-soft); }
+.portfolio-rail-note { font-size:12px; line-height:1.8; color:#a6bdc6; padding:4px 13px; }
+.portfolio-metrics { margin-bottom:24px; }
+.portfolio-list-head { flex-wrap:wrap; }
+.portfolio-list-head .tabs { margin:0; border:0; }
+.portfolio-filters { display:grid; grid-template-columns:minmax(220px,2fr) repeat(4,minmax(110px,1fr)); gap:12px; padding:18px 20px; border-bottom:1px solid var(--esg-border); align-items:end; }
+.portfolio-filters .form-field { margin:0; font-size:12px; }
+.portfolio-filters .search { display:flex; gap:8px; align-items:center; min-width:0; border:1px solid var(--esg-border); border-radius:7px; padding-left:10px; height:42px; }
+.portfolio-filters .search input { width:100%; border:0; background:transparent; font-size:14px; padding-left:0; }
+.portfolio-filters select { width:100%; font-size:13px; height:42px; }
+.portfolio-table { table-layout:fixed; width:100%; min-width:0; }
+.portfolio-table th { font-size:12px; white-space:normal; }
+.portfolio-table th:first-child { width:24%; }
+.portfolio-table th:nth-child(2) { width:14%; }
+.portfolio-table th:nth-child(3) { width:16%; }
+.portfolio-table th:nth-child(4) { width:16%; }
+.portfolio-table th:nth-child(5) { width:16%; }
+.portfolio-table th:last-child { width:14%; }
+.portfolio-table td { padding-top:23px; padding-bottom:23px; overflow-wrap:anywhere; vertical-align:top; }
+.portfolio-table .mt { margin-top:6px; }
+.portfolio-table .badge { white-space:normal; }
+.portfolio-report-title { font-size:15px; font-weight:650; }
+.portfolio-mini-progress { width:100%; height:4px; border-radius:4px; background:var(--esg-primary-soft); margin-top:9px; }
+.portfolio-mini-progress span { display:block; height:100%; background:var(--esg-primary); border-radius:4px; }
+.portfolio-row-actions { display:flex; flex-direction:column; gap:8px; align-items:flex-start; }
+.portfolio-row-actions .btn { white-space:normal; text-align:left; }
+.portfolio-footer { display:flex; align-items:center; justify-content:space-between; gap:28px; padding:24px 2px; }
+.portfolio-footer>div { display:flex; align-items:center; gap:12px; flex-shrink:0; }
+.portfolio-footer p { margin:0; font-size:14px; }
+.project-switch-list { display:grid; gap:10px; margin-top:18px; }
+.project-switch-item { display:flex; flex-direction:column; gap:5px; border:1px solid var(--esg-border); border-radius:8px; padding:14px; }
+.project-switch-item.active { background:var(--esg-primary-soft); border-color:var(--esg-primary); }
+@media(max-width:1280px) { .portfolio-filters { grid-template-columns:repeat(4,minmax(110px,1fr)); } .portfolio-filters .search { grid-column:1/-1; } .portfolio-table th,.portfolio-table td { padding-left:10px; padding-right:10px; } }
+@media(max-width:1320px) { .workspace-back { margin:0 auto 12px; } .workspace-back span,.portfolio-rail-note { display:none; } .portfolio-footer { flex-direction:column; align-items:flex-start; gap:14px; } }
 * { box-sizing: border-box; }
 .unit-metadata { margin: 0 12px 14px; }
 .unit-metadata summary { font-size: 14px; color: var(--esg-primary); cursor: pointer; }

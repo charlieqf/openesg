@@ -3,6 +3,7 @@
   'use strict';
   const context = document.modelContext;
   if (!context?.registerTool) { window.ESGWebMCP = { status: 'unsupported' }; return; }
+  if (document.body.dataset.page === 'index') { window.ESGWebMCP = { status: 'workspace-selection-required' }; return; }
   const lifecycle = new AbortController();
   const E = window.ESG, U = window.ESGUI;
   const validate = (input, fields) => E.need(input && typeof input === 'object' && !Array.isArray(input) && Object.keys(input).every(k => fields.includes(k)), 'Invalid tool input.');

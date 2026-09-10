@@ -2,7 +2,11 @@
   'use strict';
   const D = root.ESGDemo || (typeof require !== 'undefined' ? require('./demo-data.js') : null);
   const { clone, fingerprint } = D;
-  const KEY = 'openesg-demo:v1';
+  const P = root.ESGProjects || (typeof require !== 'undefined' ? require('./projects-data.js') : null);
+  const S = root.ESGSupport || (typeof require !== 'undefined' ? require('./support-data.js') : null);
+  const PROJECT = typeof location !== 'undefined' ? new URLSearchParams(location.hash.slice(1)).get('project') || P.DEFAULT_ID : P.DEFAULT_ID;
+  const KEY = P.stateKey(PROJECT);
+  const archived = () => { try { return !!P.find(PROJECT)?.archived; } catch { return true; } };
   const byId = (rows, id) => rows.find(row => row.id === id);
   const unique = values => [...new Set(values)];
   const count = (rows, identity) => identity ? unique(rows.map(row => row[identity])).length : rows.length;
@@ -97,9 +101,10 @@
   function unitDraft(g, unit) {
     const factIds = unique([...unit.checkIds.flatMap(id => linksFor(g, id).facts.map(f => f.id)), ...unit.factIds]);
     const facts = unique(factIds.map(id => byId(g.facts, id)?.factId).filter(Boolean)).map(id => latestFact(g, id)).filter(Boolean);
-    return '## ' + unit.title + '\n\n2025 年度，远澜国际控股持续完善' + unit.title + '相关工作。\n\n' + facts.map(f => f.title + '为 ' + f.displayValue + ' ' + f.unit + '。［' + f.id + '］').join('\n\n') + '\n\n相关数值采用一致的报告边界，修订情况和计算依据已在证据记录中保留。集团将持续跟进责任分工与实施效果。\n\n> 全部内容为虚构演示，不代表客户实际情况。';
+    return '## ' + unit.title + '\n\n' + g.project.period + ' 年度，' + g.project.name + '持续完善' + unit.title + '相关工作。\n\n' + facts.map(f => f.title + '为 ' + f.displayValue + ' ' + f.unit + '。［' + f.id + '］').join('\n\n') + '\n\n相关数值采用一致的报告边界，修订情况和计算依据已在证据记录中保留。集团将持续跟进责任分工与实施效果。\n\n> 全部内容为虚构演示，不代表客户实际情况。';
   }
   function reduce(source, action, context = {}) {
+    if (action.type === 'supportDesign') return S.reduce(source, action);
     const g = clone(source);
     const ctx = { time: now(), runId: 'RUN-TEST', inputHash: fingerprint(source), ...context };
     const reason = String(action.reason || '').trim();
@@ -315,6 +320,8 @@
     }
     g.checklist.path = g.project.root + '/checklists/disclosure-checklist-v' + g.checklist.version + '.json';
     g.framework.path = g.project.root + '/framework/writing-framework-v' + g.framework.version + '.json';
+    if (action.type === 'startModel' && g.actions[0]) g.actions[0].prompt_design_snapshot = S.promptProfile(g, byId(g.units, action.ids?.[0]));
+    if (g.builds.length > source.builds.length) g.builds.at(-1).supportSnapshot = clone(S.state(g));
     record(g, action.type, title, action.id || '', reason, ctx);
     return g;
   }
@@ -355,7 +362,7 @@
     m.frozenUnits = m.target_type === 'unit' ? m.target_object_ids.map(id => { const u = byId(g.units, id); return { id, body: m.selection ? u.body.replace(m.selection, m.frozenOutput) : unitDraft(g, u) }; }) : [];
   }
   function sceneGraph(id) {
-    const g = D.makeScene(id);
+    const g = P.makeScene(id, P.find(PROJECT));
     g.actions.filter(m => !m.inputHash).forEach(m => { m.operation = m.operation || m.action_type; const pack = contextPack(g, m.target_type, m.target_object_ids, 'files'); pack.id = m.context_pack_id; initializeModel(g, m, pack); g.contextPacks.push(pack); });
     return g;
   }
@@ -375,12 +382,12 @@
   root.ESG = api;
   if (typeof document === 'undefined') return;
   let envelope, working, snapshotGraph = null, error = '', stale = false;
-  const newEnvelope = scene => ({ schemaVersion: D.schemaVersion, baselineVersion: D.version, projectId: 'PRJ-DEMO-001', sceneId: scene, runId: (root.crypto?.randomUUID?.() || String(Date.now())).slice(0, 12), revision: 0, overrides: {}, filters: {}, snapshots: {} });
+  const newEnvelope = scene => ({ schemaVersion: D.schemaVersion, baselineVersion: D.version, projectId: PROJECT, sceneId: scene, runId: (root.crypto?.randomUUID?.() || String(Date.now())).slice(0, 12), revision: 0, overrides: {}, filters: {}, snapshots: {} });
   const hydrate = env => ({ ...sceneGraph(env.sceneId), ...clone(env.overrides) });
   function readEnvelope() {
-    const text = localStorage.getItem(KEY); if (!text) return newEnvelope('source-review');
+    const text = localStorage.getItem(KEY); if (!text) return newEnvelope(P.find(PROJECT)?.scene || 'source-review');
     const env = JSON.parse(text);
-    need(env.schemaVersion === D.schemaVersion && env.baselineVersion === D.version && D.scenes.some(s => s.id === env.sceneId), '演示存储版本不兼容。请重置本原型数据。'); return env;
+    need(env.projectId === PROJECT && env.schemaVersion === D.schemaVersion && env.baselineVersion === D.version && D.scenes.some(s => s.id === env.sceneId), '演示存储版本不兼容。请重置本原型数据。'); return env;
   }
   function writeEnvelope(next) {
     try { localStorage.setItem(KEY, JSON.stringify(next)); }
@@ -390,7 +397,7 @@
   function notify() { root.dispatchEvent(new CustomEvent('esg:change')); }
   function loadSnapshot() {
     snapshotGraph = null; const p = new URLSearchParams(location.hash.slice(1));
-    if (p.has('project')) need(p.get('project') === 'PRJ-DEMO-001', '链接项目不存在。');
+    if (p.has('project')) need(p.get('project') === PROJECT, '链接项目不存在。');
     if (p.get('mode') !== 'snapshot') {
       if (p.has('object')) resolveObject(working, p.get('objectType'), p.get('object'));
       if (p.has('mapping')) need(byId(working.mappings, p.get('mapping')), '当前版本不存在指定映射。');
@@ -408,21 +415,21 @@
   try {
     need(location.protocol !== 'file:', '请通过本地静态服务打开：http://127.0.0.1:4173/。双击 HTML 不支持跨页演示状态。');
     envelope = readEnvelope(); working = hydrate(envelope); writeEnvelope(envelope); loadSnapshot();
-  } catch (e) { error = e.message; envelope ||= newEnvelope('source-review'); working ||= sceneGraph(envelope.sceneId); }
+  } catch (e) { error = e.message; envelope ||= newEnvelope('source-review'); working ||= D.makeScene('source-review'); }
   Object.assign(api, {
-    state: () => snapshotGraph || working, working: () => working, meta: () => ({ ...envelope, overrides: undefined, snapshots: undefined, readonly: !!snapshotGraph, error, stale }),
+    state: () => snapshotGraph || working, working: () => working, meta: () => ({ ...envelope, overrides: undefined, snapshots: undefined, readonly: !!snapshotGraph || archived(), archived: archived(), error, stale }),
     dispatch(action) {
-      need(!error, error); need(!snapshotGraph, '这是固定快照，只能查看。请先返回当前工作版本。'); need(!stale, '另一页面已更新状态，请重新加载后再操作。');
+      need(!error, error); need(!archived(), '项目已归档，只能查看。请从报告项目列表恢复后操作。'); need(!snapshotGraph, '这是固定快照，只能查看。请先返回当前工作版本。'); need(!stale, '另一页面已更新状态，请重新加载后再操作。');
       const disk = readEnvelope(); need(disk.runId === envelope.runId && disk.revision === envelope.revision, '编辑基线已过期，请刷新后操作。');
       const nextGraph = reduce(working, action, { runId: envelope.runId });
       if (nextGraph === working) return working;
-      const base = D.makeScene(envelope.sceneId); const overrides = {};
+      const base = sceneGraph(envelope.sceneId); const overrides = {};
       Object.keys(base).forEach(key => { if (JSON.stringify(nextGraph[key]) !== JSON.stringify(base[key])) overrides[key] = clone(nextGraph[key]); });
       Object.keys(nextGraph).filter(key => !(key in base)).forEach(key => { overrides[key] = clone(nextGraph[key]); });
       writeEnvelope({ ...envelope, overrides, revision: envelope.revision + 1 }); working = nextGraph; notify(); return working;
     },
     reset(scene = envelope.sceneId) {
-      need(D.scenes.some(s => s.id === scene), '演示场景不存在。'); const env = newEnvelope(scene); writeEnvelope(env); working = hydrate(env); error = ''; stale = false; snapshotGraph = null; history.replaceState(null, '', location.pathname); notify();
+      need(!archived(), '项目已归档，不能重置；请先从列表恢复。'); need(P.find(PROJECT), '项目不存在，请返回报告项目列表。'); need(D.scenes.some(s => s.id === scene), '演示场景不存在。'); const env = newEnvelope(scene); writeEnvelope(env); working = hydrate(env); error = ''; stale = false; snapshotGraph = null; history.replaceState(null, '', location.pathname + '#project=' + encodeURIComponent(PROJECT)); notify();
     },
     filters() {
       const p = new URLSearchParams(location.hash.slice(1)); const saved = snapshotGraph ? (snapshotGraph.filters || {}) : envelope.filters;
@@ -434,12 +441,12 @@
       history.replaceState(null, '', '#' + p); notify();
     },
     select(type, id, extra = {}) {
-      resolveObject(api.state(), type, id); const p = new URLSearchParams(location.hash.slice(1)); p.set('project', 'PRJ-DEMO-001'); p.set('objectType', type); p.set('object', id);
+      resolveObject(api.state(), type, id); const p = new URLSearchParams(location.hash.slice(1)); p.set('project', PROJECT); p.set('objectType', type); p.set('object', id);
       p.delete('mapping'); p.delete('locator'); Object.entries(extra).forEach(([k, v]) => { if (v) p.set(k, v); }); history.pushState(null, '', '#' + p); notify();
     },
     url(page, type, id, extra = {}) {
-      const file = D.pages.find(p => p.key === page)?.file || 'index.html'; const params = new URLSearchParams(api.filters());
-      Object.entries({ project: 'PRJ-DEMO-001', objectType: type, object: id, ...extra }).forEach(([k, v]) => { if (v) params.set(k, v); });
+      const file = [...D.pages, ...S.pages].find(p => p.key === page)?.file || 'index.html'; const params = new URLSearchParams(api.filters());
+      Object.entries({ project: PROJECT, objectType: type, object: id, ...extra }).forEach(([k, v]) => { if (v) params.set(k, v); });
       if (snapshotGraph) { const current = new URLSearchParams(location.hash.slice(1)); ['snapshot', 'scene', 'mode'].forEach(k => params.set(k, current.get(k))); }
       return file + '#' + params;
     },
@@ -457,27 +464,27 @@
     importSnapshot(text) {
       need(text.length < 2500000, '快照过大；仅接受本原型的虚构演示快照。'); const snap = JSON.parse(text);
       need(snap.demonstration === true && snap.schemaVersion === D.schemaVersion && snap.baselineVersion === D.version, '快照格式或基线版本不兼容。');
-      need(snap.projectId === 'PRJ-DEMO-001' && snap.graph?.project?.id === snap.projectId && snap.hash === fingerprint(snap.graph), '快照项目或内容指纹无效。');
+      need(snap.projectId === PROJECT && snap.graph?.project?.id === snap.projectId && snap.hash === fingerprint(snap.graph), '快照项目或内容指纹无效。');
       need(D.scenes.some(s => s.id === snap.sceneId) && /^[A-Z0-9a-z_-]+$/.test(snap.id), '快照场景或标识无效。');
       for (const key of ['checks', 'files', 'families', 'facts', 'sourceSets', 'locators', 'mappings', 'units', 'builds', 'actions']) need(Array.isArray(snap.graph[key]) && unique(snap.graph[key].map(x => x.id)).length === snap.graph[key].length, '快照对象表损坏：' + key);
       need(snap.graph.facts.every(f => byId(snap.graph.sourceSets, f.sourceSet) && f.locatorIds.every(id => byId(snap.graph.locators, id))), '快照事实引用不完整。');
       need(snap.graph.locators.every(l => byId(snap.graph.files, l.fileId)?.version === l.fileVersion), '快照证据定位与版本不匹配。');
       need(snap.graph.mappings.every(m => byId(snap.graph.checks, m.checkId) && m.factIds.every(id => byId(snap.graph.facts, id))), '快照映射引用不完整。');
       writeEnvelope({ ...envelope, snapshots: { ...envelope.snapshots, [snap.id]: snap } });
-      history.replaceState(null, '', '#project=PRJ-DEMO-001&scene=' + encodeURIComponent(snap.sceneId) + '&snapshot=' + encodeURIComponent(snap.id) + '&mode=snapshot'); loadSnapshot(); notify(); return snap.id;
+      history.replaceState(null, '', '#project=' + encodeURIComponent(PROJECT) + '&scene=' + encodeURIComponent(snap.sceneId) + '&snapshot=' + encodeURIComponent(snap.id) + '&mode=snapshot'); loadSnapshot(); notify(); return snap.id;
     },
-    currentVersion() { history.replaceState(null, '', location.pathname); snapshotGraph = null; error = ''; try { envelope = readEnvelope(); working = hydrate(envelope); stale = false; } catch (e) { error = e.message; } notify(); },
+    currentVersion() { history.replaceState(null, '', location.pathname + '#project=' + encodeURIComponent(PROJECT)); snapshotGraph = null; error = ''; try { envelope = readEnvelope(); working = hydrate(envelope); stale = false; } catch (e) { error = e.message; } notify(); },
   });
-  root.addEventListener('hashchange', () => { error = ''; try { loadSnapshot(); } catch (e) { error = e.message; } notify(); });
+  root.addEventListener('hashchange', () => { if ((new URLSearchParams(location.hash.slice(1)).get('project') || P.DEFAULT_ID) !== PROJECT) { location.reload(); return; } error = ''; try { loadSnapshot(); } catch (e) { error = e.message; } notify(); });
   root.addEventListener('storage', event => {
-    if (event.key !== KEY || snapshotGraph) return;
+    if (event.key === P.KEY) { notify(); return; } if (event.key !== KEY || snapshotGraph) return;
     try { const disk = readEnvelope(); if (disk.revision === envelope.revision && disk.runId === envelope.runId) { envelope.snapshots = disk.snapshots; return; } if (document.querySelector('[data-dirty="true"]')) { stale = true; notify(); } else { envelope = disk; working = hydrate(envelope); notify(); } } catch (e) { error = e.message; notify(); }
   });
   root.addEventListener('focus', () => {
     if (snapshotGraph || error) return; try { const disk = readEnvelope(); if (disk.revision !== envelope.revision || disk.runId !== envelope.runId) { if (document.querySelector('[data-dirty="true"]')) stale = true; else { envelope = disk; working = hydrate(envelope); } notify(); } } catch (e) { error = e.message; notify(); }
   });
   setInterval(() => {
-    if (snapshotGraph || error || stale) return;
+    if (snapshotGraph || error || stale || archived() || document.body.dataset.page === 'index') return;
     const task = working.actions.find(m => ['pending', 'running'].includes(m.status) && Date.now() - m.startedAt > (m.status === 'pending' ? 650 : 1600));
     if (task) { try { api.dispatch({ type: 'advanceModel', id: task.id }); } catch { /* UI presents persisted state; a stale tab must not overwrite. */ } }
   }, 450);
